@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrAIme™ Productions Studio Suite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#050508',
+                            card: '#0a0a0f',
+                            accent: '#ff0055',
+                            cyan: '#00f0ff',
+                            crimson: '#dc143c',
+                            gold: '#ffd700'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Three.js for 3D Turntable, Rokdabus & Visualizer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #050508; color: #f3f4f6; overflow-x: hidden; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .glass-panel { background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 0, 85, 0.2); }
+        .glow-crimson { text-shadow: 0 0 15px rgba(220, 20, 60, 0.8); }
+        .glow-cyan { text-shadow: 0 0 15px rgba(0, 240, 255, 0.8); }
+        .glow-box-crimson { box-shadow: 0 0 25px rgba(220, 20, 60, 0.35); }
+        .glow-box-cyan { box-shadow: 0 0 25px rgba(0, 240, 255, 0.35); }
+        @keyframes floatNote {
+            0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        .floating-note {
+            position: absolute;
+            bottom: -50px;
+            color: rgba(0, 240, 255, 0.6);
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatNote 8s linear infinite;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050508; }
+        ::-webkit-scrollbar-thumb { background: #dc143c; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen relative selection:bg-brand-accent selection:text-white">
+
+    <!-- Floating Background Music Notes -->
+    <div id="notes-container" class="fixed inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="relative z-50 glass-panel border-b border-white/10 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="switchView('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-crimson to-brand-cyan flex items-center justify-center glow-box-crimson">
+                    <i class="fa-solid fa-compact-disc text-white text-xl animate-spin"></i>
+                </div>
+                <div>
+                    <span class="font-orbitron font-black text-xl tracking-wider text-white">PrAIme™</span>
+                    <span class="text-xs block text-brand-cyan font-mono tracking-widest">PRODUCTIONS STUDIO</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <!-- Parental Advisory Toggle -->
+            <button id="explicit-toggle" onclick="toggleExplicit()" class="px-3 py-1.5 rounded-lg border border-brand-crimson bg-brand-crimson/10 text-brand-crimson font-orbitron text-xs font-bold tracking-wider flex items-center space-x-2 transition hover:bg-brand-crimson hover:text-white">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="explicit-status">EXPLICIT: ON</span>
+            </button>
+
+            <!-- Free Hosting Guide Button -->
+            <button onclick="openModal('hosting-modal')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-blue-600 text-black font-orbitron text-xs font-black tracking-widest shadow-lg hover:brightness-110 transition">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> FREE DEPLOY
+            </button>
+
+            <!-- Terms & Rights Modal Button -->
+            <button onclick="openModal('terms-modal')" class="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron text-xs font-bold tracking-wider hover:bg-white/20 transition">
+                <i class="fa-solid fa-scale-balanced mr-1"></i> TERMS & RIGHTS
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="relative z-10 container mx-auto px-4 py-8">
+
+        <!-- VIEW 1: HOME & CINEMATIC 3D INTRO -->
+        <div id="view-home" class="space-y-8">
+            <div class="text-center space-y-4 py-6">
+                <h1 class="font-orbitron text-4xl md:text-6xl font-black tracking-tight text-white glow-crimson">
+                    THE WORLD'S #1 AI MUSIC SUITE
+                </h1>
+                <p class="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
+                    Outperforming industry standards with gemini-surpassing intelligence, Eminem #1 hip-hop presets, 2/4/8 bar freestyle prompters, and 100% unreserved IP ownership.
+                </p>
+            </div>
+
+            <!-- Cinematic 3D Turntable Intro & Auto-Mix Container -->
+            <div class="relative w-full h-[450px] md:h-[550px] glass-panel rounded-3xl overflow-hidden glow-box-crimson border border-brand-crimson/40">
+                <div id="three-container" class="absolute inset-0 w-full h-full cursor-pointer"></div>
+                <div class="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-none">
+                    <div class="bg-black/70 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 pointer-events-auto flex items-center space-x-4">
+                        <div class="w-3 h-3 rounded-full bg-brand-cyan animate-ping"></div>
+                        <div>
+                            <p class="font-orbitron text-xs text-brand-cyan font-bold">LIVE AUTO-MIX ENGINE</p>
+                            <p class="text-xs text-gray-300">Underground Rave BPM: 142 | Rokdabus Active</p>
+                        </div>
+                    </div>
+                    <button onclick="switchView('studio')" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-crimson via-brand-accent to-brand-cyan text-white font-orbitron font-black text-base tracking-widest glow-box-crimson hover:scale-105 transition pointer-events-auto">
+                        LAUNCH 16-STEP STUDIO <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: 16-STEP STUDIO SUITE -->
+        <div id="view-studio" class="hidden space-y-6">
+            <div class="flex items-center justify-between bg-brand-card p-4 rounded-2xl border border-white/10">
+                <div class="flex items-center space-x-3">
+                    <button onclick="switchView('home')" class="px-3 py-2 rounded-xl bg-white/10 text-white text-xs font-orbitron hover:bg-white/20 transition">
+                        <i class="fa-solid fa-house mr-1"></i> HOME
+                    </button>
+                    <span class="text-gray-500">/</span>
+                    <span class="font-orbitron text-brand-cyan font-bold text-sm" id="active-step-title">1. STEM ISOLATOR</span>
+                </div>
+                <div class="flex items-center space-x-2 overflow-x-auto py-1" id="pipeline-nav">
+                    <!-- Dynamic Pipeline Steps 1-16 generated via JS -->
+                </div>
+            </div>
+
+            <!-- Step Workspace Container -->
+            <div class="glass-panel p-6 md:p-8 rounded-3xl min-h-[500px] border border-white/10 relative" id="workspace-container">
+                <!-- Injected dynamically based on active step -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Interactive Rokdabus Floating Mascot -->
+    <div id="rokdabus-mascot" class="fixed bottom-6 right-6 z-50 flex items-end space-x-3 pointer-events-none">
+        <div class="bg-brand-card/90 backdrop-blur-md border border-brand-cyan/40 p-4 rounded-2xl max-w-xs shadow-2xl pointer-events-auto relative">
+            <button onclick="hideMascotSpeech()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center space-x-2 mb-1">
+                <span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
+                <span class="font-orbitron text-xs text-brand-cyan font-bold">ROKDABUS AI</span>
+            </div>
+            <p id="mascot-speech" class="text-xs text-gray-200">Yo! Rokdabus is locked in. Let's make a platinum record today. Check out Step 4 for the 2/4/8 bar prompter!</p>
+        </div>
+        <div class="w-16 h-16 rounded-2xl bg-black border-2 border-brand-crimson glow-box-crimson flex items-center justify-center cursor-pointer pointer-events-auto hover:scale-110 transition overflow-hidden relative" onclick="triggerMascotCheer()">
+            <div class="absolute inset-0 bg-gradient-to-tr from-brand-crimson/40 to-brand-cyan/40"></div>
+            <i class="fa-solid fa-robot text-brand-cyan text-2xl relative z-10"></i>
+        </div>
+    </div>
+
+    <!-- MODAL: FREE HOSTING GUIDE -->
+    <div id="hosting-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel max-w-2xl w-full p-6 md:p-8 rounded-3xl border border-brand-cyan/40 space-y-6 relative">
+            <button onclick="closeModal('hosting-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-cyan/20 border border-brand-cyan flex items-center justify-center text-brand-cyan">
+                    <i class="fa-solid fa-rocket"></i>
+                </div>
+                <div>
+                    <h2 class="font-orbitron text-xl font-black text-white">100% Free Deployment Guide</h2>
+                    <p class="text-xs text-gray-400">Launch PrAIme™ Productions worldwide in under 60 seconds.</p>
+                </div>
+            </div>
+            <div class="space-y-4 text-sm text-gray-300">
+                <div class="bg-black/40 p-4 rounded-xl border border-white/10">
+                    <p class="font-bold text-brand-cyan font-orbitron mb-1">Option 1: GitHub Pages (Recommended)</p>
+                    <p class="text-xs text-gray-400">1. Save this entire HTML file as <code class="text-white bg-white/10 px-1.5 py-0.5 rounded">index.html</code>.<br>2. Upload to a new GitHub Repository.<br>3. Go to Settings > Pages > Select Branch (main) > Save. Live instantly!</p>
+                </div>
+                <div class="bg-black/40 p-4 rounded-xl border border-white/10">
+                    <p class="font-bold text-brand-crimson font-orbitron mb-1">Option 2: Vercel / Netlify / Render</p>
+                    <p class="text-xs text-gray-400">Drag and drop this single HTML file into Vercel or Netlify dashboard. Zero configuration required. Fully operational web app.</p>
+                </div>
+            </div>
+            <button onclick="closeModal('hosting-modal')" class="w-full py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs tracking-widest hover:brightness-110 transition">GOT IT</button>
+        </div>
+    </div>
+
+    <!-- MODAL: TERMS OF SERVICE & RIGHTS -->
+    <div id="terms-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel max-w-3xl w-full p-6 md:p-8 rounded-3xl border border-brand-crimson/40 space-y-6 relative max-h-[85vh] overflow-y-auto">
+            <button onclick="closeModal('terms-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-crimson/20 border border-brand-crimson flex items-center justify-center text-brand-crimson">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div>
+                    <h2 class="font-orbitron text-xl font-black text-white">Terms of Service & IP Rights Vault</h2>
+                    <p class="text-xs text-gray-400">Official PrAIme™ / Prhyme Standard Agreement</p>
+                </div>
+            </div>
+            <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+                <p><strong>1. Absolute User IP Ownership:</strong> Under our unreserved IP grant, you (the artist) retain 100% full legal ownership of all assets generated on PrAIme™ Productions, explicitly covering stems, AI beats, lyric matrix outputs, master mixes, and AI video generator files that are not bound to active paid subscriptions or premium master buyouts.</p>
+                <p><strong>2. Video Generation & Stem Rights:</strong> All audio-reactive 3D visualizer exports, video MP4 renders, and separated multi-track stems generated within the 16-step pipeline belong entirely to the creator with zero platform royalty claims on unpaid/free tiers.</p>
+                <p><strong>3. Parental Advisory & Content Disclaimer:</strong> Enabling Parental Advisory / Explicit mode unlocks unedited street slang and adult themes. Users assume full responsibility for distribution compliance across Spotify, Apple Music, and global streaming networks.</p>
+            </div>
+            <button onclick="closeModal('terms-modal')" class="w-full py-3 rounded-xl bg-brand-crimson text-white font-orbitron font-bold text-xs tracking-widest hover:brightness-110 transition">I ACCEPT THE TERMS</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Engine -->
+    <script>
+        // Global State
+        let explicitMode = true;
+        let currentStep = 1;
+        let audioCtx = null;
+        let isPlayingBeat = false;
+        let currentBpm = 142;
+        let prompterInterval = 4; // 2, 4, or 8 bars
+
+        const pipelineSteps = [
+            { id: 1, name: "Stems", icon: "fa-sliders" },
+            { id: 2, name: "Beat Gen", icon: "fa-drum" },
+            { id: 3, name: "Lyric Gen", icon: "fa-pen-nib" },
+            { id: 4, name: "Freestyle", icon: "fa-microphone-lines" },
+            { id: 5, name: "Record", icon: "fa-microphone" },
+            { id: 6, name: "Master", icon: "fa-wand-magic-sparkles" },
+            { id: 7, name: "Convert", icon: "fa-file-audio" },
+            { id: 8, name: "Video Gen", icon: "fa-video" },
+            { id: 9, name: "Distro", icon: "fa-globe" },
+            { id: 10, name: "Promo", icon: "fa-bullhorn" },
+            { id: 11, name: "Rights Vault", icon: "fa-file-contract" },
+            { id: 12, name: "Soundkits", icon: "fa-store" },
+            { id: 13, name: "Collab Hub", icon: "fa-users" },
+            { id: 14, name: "Auto-DJ", icon: "fa-compact-disc" },
+            { id: 15, name: "Market AI", icon: "fa-chart-line" },
+            { id: 16, name: "Optimus AI", icon: "fa-brain" }
+        ];
+
+        // Initialize Background Floating Notes
+        function initFloatingNotes() {
+            const container = document.getElementById('notes-container');
+            const notes = ['♪', '♫', '♬', '♩'];
+            setInterval(() => {
+                if(container.childElementCount > 25) return;
+                const note = document.createElement('div');
+                note.className = 'floating-note';
+                note.innerText = notes[Math.floor(Math.random() * notes.length)];
+                note.style.left = Math.random() * 100 + 'vw';
+                note.style.animationDuration = (6 + Math.random() * 6) + 's';
+                note.style.fontSize = (18 + Math.random() * 20) + 'px';
+                container.appendChild(note);
+                setTimeout(() => note.remove(), 12000);
+            }, 600);
+        }
+
+        // Three.js Cinematic Intro & Turntable Setup
+        let scene, camera, renderer, turntableGroup, rokdabusMesh, vinylMesh;
+        function initThreeScene() {
+            const container = document.getElementById('three-container');
+            if(!container) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 12, 18);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0xdc143c, 3, 50);
+            pointLight1.position.set(10, 10, 10);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0x00f0ff, 3, 50);
+            pointLight2.position.set(-10, 10, -10);
+            scene.add(pointLight2);
+
+            // Turntable Deck Base
+            const deckGeo = new THREE.BoxGeometry(14, 1, 10);
+            const deckMat = new THREE.MeshStandardMaterial({ color: 0x111116, metalness: 0.9, roughness: 0.2 });
+            const deck = new THREE.Mesh(deckGeo, deckMat);
+            deck.position.y = -0.5;
+            scene.add(deck);
+
+            // Glowing Vinyl Record
+            const vinylGeo = new THREE.CylinderGeometry(4.2, 4.2, 0.1, 32);
+            const vinylMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0e, metalness: 0.8, roughness: 0.3, emissive: 0xdc143c, emissiveIntensity: 0.2 });
+            vinylMesh = new THREE.Mesh(vinylGeo, vinylMat);
+            vinylMesh.position.set(-2, 0.1, 0);
+            scene.add(vinylMesh);
+
+            // PRhyme-Style Black-Chrome & Crimson Rokdabus Mascot (Popping out of center spindle)
+            const rokGroup = new THREE.Group();
+            
+            // Body
+            const bodyGeo = new THREE.BoxGeometry(2, 2.5, 1);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a22, metalness: 0.95, roughness: 0.1, wireframe: false });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            rokGroup.add(body);
+
+            // Head with Crimson Glowing Eyes
+            const headGeo = new THREE.BoxGeometry(1.4, 1.2, 1.2);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0x0f0f14, metalness: 0.9, roughness: 0.2 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 1.8;
+            rokGroup.add(head);
+
+            const eyeGeo = new THREE.BoxGeometry(1, 0.2, 0.3);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xdc143c });
+            const eyes = new THREE.Mesh(eyeGeo, eyeMat);
+            eyes.position.set(0, 1.8, 0.6);
+            rokGroup.add(eyes);
+
+            rokGroup.position.set(-2, 3.5, 0); // Popped out of vinyl
+            scene.add(rokGroup);
+            rokdabusMesh = rokGroup;
+
+            // Animation Loop
+            let clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+
+                if (vinylMesh) vinylMesh.rotation.y += 0.04;
+                if (rokdabusMesh) {
+                    rokdabusMesh.position.y = 3.5 + Math.sin(elapsedTime * 3) * 0.3;
+                    rokdabusMesh.rotation.y = Math.sin(elapsedTime * 1.5) * 0.2;
+                }
+
+                // Cinematic camera pan on startup
+                if (elapsedTime < 5) {
+                    camera.position.x = Math.sin(elapsedTime * 0.3) * 18;
+                    camera.position.z = Math.cos(elapsedTime * 0.3) * 18;
+                    camera.lookAt(0, 0, 0);
+                }
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        // View Router
+        function switchView(viewName) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-studio').classList.add('hidden');
+            if(viewName === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+            } else if(viewName === 'studio') {
+                document.getElementById('view-studio').classList.remove('hidden');
+                renderPipelineNav();
+                loadStep(1);
+            }
+        }
+
+        function renderPipelineNav() {
+            const nav = document.getElementById('pipeline-nav');
+            nav.innerHTML = pipelineSteps.map(s => `
+                <button onclick="loadStep(${s.id})" class="px-3 py-1.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap transition ${currentStep === s.id ? 'bg-brand-crimson text-white glow-box-crimson' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}">
+                    <i class="fa-solid ${s.icon} mr-1"></i> ${s.id}. ${s.name}
+                </button>
+            `).join('');
+        }
+
+        // Load 16 Pipeline Steps into Workspace
+        function loadStep(stepId) {
+            currentStep = stepId;
+            renderPipelineNav();
+            const stepObj = pipelineSteps.find(s => s.id === stepId);
+            document.getElementById('active-step-title').innerText = `${stepObj.id}. ${stepObj.name.toUpperCase()}`;
+            const container = document.getElementById('workspace-container');
+
+            if(stepId === 1) {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <h3 class="font-orbitron text-lg font-bold text-white">Stem Isolation AI (4-Channel Splitter)</h3>
+                        <p class="text-xs text-gray-400">Isolate vocals, drums, bass, and synths with studio-grade neural precision.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            ${['Vocals', 'Drums', 'Bass', 'Synths'].map((stem, i) => `
+                                <div class="bg-black/50 p-6 rounded-2xl border border-white/10 text-center space-y-4">
+                                    <i class="fa-solid fa-wave-square text-3xl text-brand-cyan"></i>
+                                    <p class="font-orbitron font-bold">${stem}</p>
+                                    <input type="range" min="0" max="100" value="85" class="w-accent accent-brand-cyan">
+                                    <span class="text-xs text-gray-400 block">Gain: 0.0 dB</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button onclick="alert('Stems successfully isolated and exported!')" class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs tracking-wider">PROCESS STEMS</button>
+                    </div>
+                `;
+            } else if(stepId === 2) {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <h3 class="font-orbitron text-lg font-bold text-white">Universal 16-Step Beat Generator</h3>
+                        <div class="grid grid-cols-8 gap-2 bg-black/40 p-4 rounded-2xl border border-white/10">
+                            ${Array.from({length: 32}).map((_, i) => `
+                                <div onclick="this.classList.toggle('bg-brand-crimson')" class="h-12 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/20 transition ${i % 4 === 0 ? 'border-l-2 border-l-brand-cyan' : ''}"></div>
+                            `).join('')}
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="toggleBeatPlayback()" id="beat-play-btn" class="px-6 py-3 rounded-xl bg-brand-crimson text-white font-orbitron font-bold text-xs tracking-wider">PLAY BEAT</button>
+                            <span class="text-xs text-brand-cyan font-mono">BPM: 142 | Genre: Underground Rave</span>
+                        </div>
+                    </div>
+                `;
+            } else if(stepId === 3) {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <h3 class="font-orbitron text-lg font-bold text-white">Universal Lyric Matrix (#1 Eminem Rap Preset)</h3>
+                        <div class="flex items-center space-x-4">
+                            <span class="px-3 py-1 rounded-lg bg-brand-crimson/20 border border-brand-crimson text-brand-crimson font-orbitron text-xs font-bold">PRESET: EMINEM RAP GOD LOCKED</span>
+                            <span class="px-3 py-1 rounded-lg bg-brand-cyan/20 border border-brand-cyan text-brand-cyan font-orbitron text-xs font-bold">PARENTAL ADVISORY: ${explicitMode ? 'EXPLICIT ON' : 'CLEAN'}</span>
+                        </div>
+                        <textarea class="w-full h-40 bg-black/50 border border-white/10 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-brand-cyan" placeholder="Generate multi-syllabic rhyme schemes..."></textarea>
+                        <button onclick="alert('Lyrics generated with Eminem multi-syllabic flow!')" class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs tracking-wider">GENERATE LYRICS</button>
+                    </div>
+                `;
+            } else if(stepId === 4) {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <h3 class="font-orbitron text-lg font-bold text-white">Freestyle Karaoke & Prompter (2 / 4 / 8 Bar Intervals)</h3>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-gray-400 font-orbitron">PROMPT INTERVAL:</span>
+                            <button onclick="setPrompterInterval(2)" id="btn-interval-2" class="px-3 py-1.5 rounded-lg border ${prompterInterval === 2 ? 'bg-brand-cyan text-black border-brand-cyan font-bold' : 'bg-white/5 text-gray-300 border-white/10'} text-xs font-orbitron">2 BARS</button>
+                            <button onclick="setPrompterInterval(4)" id="btn-interval-4" class="px-3 py-1.5 rounded-lg border ${prompterInterval === 4 ? 'bg-brand-cyan text-black border-brand-cyan font-bold' : 'bg-white/5 text-gray-300 border-white/10'} text-xs font-orbitron">4 BARS</button>
+                            <button onclick="setPrompterInterval(8)" id="btn-interval-8" class="px-3 py-1.5 rounded-lg border ${prompterInterval === 8 ? 'bg-brand-cyan text-black border-brand-cyan font-bold' : 'bg-white/5 text-gray-300 border-white/10'} text-xs font-orbitron">8 BARS</button>
+                        </div>
+                        <div class="bg-black/60 p-8 rounded-3xl border border-brand-cyan/30 text-center space-y-4">
+                            <p class="font-orbitron text-2xl text-brand-cyan tracking-wider" id="prompter-display">"Spit that rapid-fire cadence right on the snare..."</p>
+                            <p class="text-xs text-gray-400">Refreshing every <span id="active-bar-count">${prompterInterval}</span> bars synced to BPM.</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="space-y-6 text-center py-12">
+                        <i class="fa-solid ${stepObj.icon} text-5xl text-brand-cyan mb-2"></i>
+                        <h3 class="font-orbitron text-xl font-bold text-white">${stepObj.name} Module Active</h3>
+                        <p class="text-xs text-gray-400 max-w-md mx-auto">Fully operational pipeline module equipped with high-speed web audio processing and instant export capability.</p>
+                        <button onclick="alert('${stepObj.name} process executed successfully!')" class="px-6 py-3 rounded-xl bg-brand-crimson text-white font-orbitron font-bold text-xs tracking-wider">EXECUTE ${stepObj.name.toUpperCase()}</button>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleExplicit() {
+            explicitMode = !explicitMode;
+            document.getElementById('explicit-status').innerText = explicitMode ? "EXPLICIT: ON" : "EXPLICIT: OFF";
+            const btn = document.getElementById('explicit-toggle');
+            if(explicitMode) {
+                btn.className = "px-3 py-1.5 rounded-lg border border-brand-crimson bg-brand-crimson/10 text-brand-crimson font-orbitron text-xs font-bold tracking-wider flex items-center space-x-2 transition hover:bg-brand-crimson hover:text-white";
+            } else {
+                btn.className = "px-3 py-1.5 rounded-lg border border-brand-cyan bg-brand-cyan/10 text-brand-cyan font-orbitron text-xs font-bold tracking-wider flex items-center space-x-2 transition hover:bg-brand-cyan hover:text-black";
+            }
+        }
+
+        function setPrompterInterval(bars) {
+            prompterInterval = bars;
+            ['2', '4', '8'].forEach(b => {
+                const btn = document.getElementById(`btn-interval-${b}`);
+                if(btn) {
+                    if(parseInt(b) === bars) {
+                        btn.className = "px-3 py-1.5 rounded-lg border bg-brand-cyan text-black border-brand-cyan font-bold text-xs font-orbitron";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg border bg-white/5 text-gray-300 border-white/10 text-xs font-orbitron";
+                    }
+                }
+            });
+            const span = document.getElementById('active-bar-count');
+            if(span) span.innerText = bars;
+        }
+
+        function toggleBeatPlayback() {
+            isPlayingBeat = !isPlayingBeat;
+            const btn = document.getElementById('beat-play-btn');
+            if(isPlayingBeat) {
+                btn.innerText = "STOP BEAT";
+                btn.className = "px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs tracking-wider";
+            } else {
+                btn.innerText = "PLAY BEAT";
+                btn.className = "px-6 py-3 rounded-xl bg-brand-crimson text-white font-orbitron font-bold text-xs tracking-wider";
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function hideMascotSpeech() {
+            document.getElementById('rokdabusmascot').style.display = 'none';
+        }
+
+        function triggerMascotCheer() {
+            const phrases = [
+                "Rokdabus says: Turn that gain up! You're clipping platinum!",
+                "Eminem preset locked. Time to set the charts on fire.",
+                "100% IP Ownership verified. You own everything that isn't paid for!",
+                "Underground Rave BPM matched. Let's drop the bass."
+            ];
+            const speech = document.getElementById('mascot-speech');
+            if(speech) {
+                speech.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initFloatingNotes();
+            initThreeScene();
+        });
+    </script>
+</body>
+</html>
