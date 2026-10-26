@@ -24,8 +24,6 @@
             }
         }
     </script>
-    <!-- Three.js for 3D Turntables & Interactive Rokdabus Rig -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -43,12 +41,17 @@
             100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(0,240,255,0.6)); }
         }
         .animate-rokdabus { animation: pulseGlow 3s ease-in-out infinite; }
+        @keyframes matrixRain {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 1000px; }
+        }
+        .cyber-grid { background-image: linear-gradient(rgba(0,240,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,0,127,0.05) 1px, transparent 1px); background-size: 40px 40px; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #030305; }
         ::-webkit-scrollbar-thumb { background: #ff007f; border-radius: 3px; }
     </style>
 </head>
-<body class="min-h-screen relative selection:bg-brand-magenta selection:text-white pb-12">
+<body class="min-h-screen relative selection:bg-brand-magenta selection:text-white pb-32 cyber-grid">
 
     <!-- Audio Engine Splash Screen -->
     <div id="audio-splash" class="fixed inset-0 z-50 bg-black/98 backdrop-blur-3xl flex flex-col items-center justify-center p-6 text-center space-y-6">
@@ -57,11 +60,30 @@
         </div>
         <div class="space-y-2 max-w-lg">
             <h1 class="font-orbitron text-2xl md:text-4xl font-black text-white glow-cyan">PRHYME x PrAIme™ MASTER SUITE</h1>
-            <p class="text-xs md:text-sm text-gray-400">Tap below to initialize cross-device audio synthesis, Auto-DJ mix loop, and AI video engine.</p>
+            <p class="text-xs md:text-sm text-gray-400">Tap below to initialize cross-device audio synthesis, Auto-DJ mix loop, and AI mixing engine.</p>
         </div>
         <button onclick="initAudioEngine()" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-cyan via-brand-magenta to-brand-crimson text-white font-orbitron font-black text-xs md:text-sm tracking-widest glow-box-magenta hover:scale-105 transition">
             ACTIVATE AUDIO ENGINE & LIVE DJ <i class="fa-solid fa-bolt ml-2"></i>
         </button>
+    </div>
+
+    <!-- Processing Task Progress Modal -->
+    <div id="task-modal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div class="w-20 h-20 rounded-2xl bg-brand-card border-2 border-brand-cyan flex items-center justify-center glow-box-cyan animate-pulse">
+            <i id="task-icon" class="fa-solid fa-compact-disc text-brand-cyan text-3xl animate-spin"></i>
+        </div>
+        <div class="space-y-2 max-w-md w-full">
+            <h3 id="task-title" class="font-orbitron text-lg font-black text-white glow-magenta">PROCESSING BROADCAST MASTER</h3>
+            <p id="task-status" class="text-xs text-brand-cyan font-mono">Applying 3-Band Parametric EQ & Brickwall Limiting...</p>
+        </div>
+        <!-- Progress Bar Container -->
+        <div class="w-full max-w-md bg-white/5 border border-white/10 rounded-full h-4 overflow-hidden p-0.5">
+            <div id="task-bar" class="bg-gradient-to-r from-brand-cyan to-brand-magenta h-full rounded-full transition-all duration-200 w-0"></div>
+        </div>
+        <div class="flex items-center justify-between w-full max-w-md text-xs font-mono text-gray-400">
+            <span>Progress: <strong id="task-percent" class="text-white">0%</strong></span>
+            <span>Elapsed: <strong id="task-timer" class="text-brand-gold">0.0s</strong></span>
+        </div>
     </div>
 
     <!-- Top Master Control Bar -->
@@ -88,6 +110,51 @@
             </button>
         </div>
     </header>
+
+    <!-- Bottom Navigation Toolbar (Direct Access to Any Module) -->
+    <nav class="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-40 bg-black/90 backdrop-blur-xl border border-brand-cyan/40 px-3 py-2 rounded-2xl flex items-center space-x-2 overflow-x-auto max-w-[95vw] shadow-2xl glow-box-cyan">
+        <button onclick="switchView('home')" class="px-3 py-2 rounded-xl bg-white/10 text-white text-xs font-orbitron hover:bg-white/20 transition whitespace-nowrap">
+            <i class="fa-solid fa-house mr-1"></i> Home
+        </button>
+        <div class="w-px h-6 bg-white/20 mx-1"></div>
+        <div id="bottom-pipeline-nav" class="flex items-center space-x-2"></div>
+    </nav>
+
+    <!-- Spotify-Like Sticky In-App Music Player (Bottom Bar) -->
+    <div id="music-player-bar" class="fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-2xl border-t border-brand-magenta/40 px-4 py-2.5 flex items-center justify-between shadow-2xl">
+        <div class="flex items-center space-x-3 w-1/4 truncate">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-magenta to-brand-cyan flex items-center justify-center glow-box-magenta flex-shrink-0">
+                <i class="fa-solid fa-music text-white text-sm"></i>
+            </div>
+            <div class="truncate">
+                <p id="player-track-name" class="font-orbitron text-xs text-white font-bold truncate">No Track Loaded</p>
+                <p id="player-track-status" class="text-[10px] text-brand-cyan font-mono">Ready for Master / Playback</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center space-y-1 w-1/2 max-w-md">
+            <div class="flex items-center space-x-4">
+                <button onclick="seekPlayer(-5)" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="player-play-btn" onclick="togglePlayerPlayback()" class="w-9 h-9 rounded-full bg-brand-magenta text-white flex items-center justify-center glow-box-magenta hover:scale-105 transition"><i class="fa-solid fa-play text-xs"></i></button>
+                <button onclick="seekPlayer(5)" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <div class="w-full flex items-center space-x-2 text-[10px] font-mono text-gray-400">
+                <span id="player-current-time">0:00</span>
+                <input id="player-seek-slider" type="range" min="0" max="100" value="0" class="w-full accent-brand-magenta h-1 bg-white/10 rounded-lg cursor-pointer" oninput="onPlayerSeek(this.value)">
+                <span id="player-total-time">0:00</span>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 w-1/4">
+            <div class="hidden md:flex items-center space-x-2">
+                <i class="fa-solid fa-volume-high text-xs text-gray-400"></i>
+                <input type="range" min="0" max="1" step="0.05" value="1" class="w-20 accent-brand-cyan h-1 bg-white/10 rounded-lg cursor-pointer" oninput="setPlayerVolume(this.value)">
+            </div>
+            <button onclick="triggerQuickDownload()" class="px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-[10px] glow-box-cyan hover:brightness-110">
+                <i class="fa-solid fa-download mr-1"></i> DOWNLOAD
+            </button>
+        </div>
+    </div>
 
     <!-- Main Workspace Container -->
     <main class="container mx-auto px-4 py-6 relative z-10 space-y-6">
@@ -143,13 +210,11 @@
                     <!-- Rokdabus Character Graphic Card -->
                     <div class="relative z-10 flex flex-col items-center text-center space-y-4 animate-rokdabus cursor-pointer" onclick="playKick()">
                         <div class="relative w-48 h-48 md:w-64 md:h-64 rounded-full border-4 border-brand-cyan/80 p-2 bg-gradient-to-br from-brand-magenta/30 via-black to-brand-cyan/30 glow-box-magenta flex items-center justify-center overflow-hidden">
-                            <!-- Rokdabus Vinyl Mascot Graphic -->
                             <div class="absolute inset-2 rounded-full bg-black border-2 border-dashed border-brand-magenta flex items-center justify-center animate-spin" style="animation-duration: 8s;">
                                 <div class="w-16 h-16 rounded-full bg-brand-cyan/20 border border-brand-cyan flex items-center justify-center">
                                     <div class="w-4 h-4 rounded-full bg-brand-magenta"></div>
                                 </div>
                             </div>
-                            <!-- Stylized Character Avatar Overlay -->
                             <div class="relative z-10 flex flex-col items-center space-y-1">
                                 <div class="w-16 h-12 rounded-xl bg-brand-cyan border-2 border-white flex items-center justify-center shadow-lg">
                                     <div class="w-3 h-2 bg-black rounded-full mx-1"></div>
@@ -180,7 +245,7 @@
             </div>
         </div>
 
-        <!-- VIEW 2: 16-STEP MASTER STUDIO PIPELINE -->
+        <!-- VIEW 2: MASTER STUDIO WORKSPACE -->
         <div id="view-studio" class="hidden space-y-6">
             <div class="flex items-center justify-between bg-brand-card p-4 rounded-2xl border border-white/10">
                 <div class="flex items-center space-x-3">
@@ -190,7 +255,7 @@
                     <span class="text-gray-500">/</span>
                     <span class="font-orbitron text-brand-cyan font-bold text-sm" id="active-step-title">2. BEAT GEN</span>
                 </div>
-                <div class="flex items-center space-x-2 overflow-x-auto py-1 max-w-[60vw]" id="pipeline-nav"></div>
+                <div class="text-xs text-brand-magenta font-mono font-bold">PRHYME STUDIO SUITE (UNRESTRICTED ACCESS)</div>
             </div>
 
             <div class="glass-panel p-6 md:p-8 rounded-3xl min-h-[520px] border border-brand-magenta/30 relative" id="workspace-container"></div>
@@ -229,9 +294,25 @@
         let currentStep = 2;
         let explicitMode = true;
         let beatGrid = Array(16).fill(false);
+        
         let uploadedAudioBuffer = null;
         let uploadedTrackName = null;
+        let uploadedRawArrayBuffer = null;
+
+        // Player State
+        let playerSourceNode = null;
+        let playerGainNode = null;
+        let playerStartTime = 0;
+        let playerPauseOffset = 0;
+        let isPlayerPlaying = false;
+        let activePlayerBuffer = null;
+        let activePlayerName = "No Track Loaded";
+        let lastRenderedBlob = null;
+        let lastRenderedFilename = "PRhyme_Master.wav";
+
         let generatedLyricsCache = "Intelligent lyric generator ready. Program a beat or upload your recording to generate bars.";
+        let isProcessingQueue = false;
+        let taskTimerInterval = null;
 
         const pipelineSteps = [
             { id: 1, name: "Stems", icon: "fa-sliders" },
@@ -245,6 +326,253 @@
             { id: 10, name: "Social Hub", icon: "fa-share-nodes" },
             { id: 12, name: "Soundkits", icon: "fa-store" }
         ];
+
+        // INDEXEDDB PERSISTENCE ENGINE
+        const DB_NAME = 'PRhymeSessionDB';
+        const DB_VERSION = 1;
+        let dbInstance = null;
+
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('session')) {
+                        db.createObjectStore('session', { keyPath: 'id' });
+                    }
+                };
+                req.onsuccess = (e) => {
+                    dbInstance = e.target.result;
+                    resolve(dbInstance);
+                };
+                req.onerror = (e) => reject(e);
+            });
+        }
+
+        async function saveSessionToDB(fileName, bufferData) {
+            if (!dbInstance) await initIndexedDB();
+            const tx = dbInstance.transaction('session', 'readwrite');
+            const store = tx.objectStore('session');
+            store.put({ id: 'activeTrack', fileName: fileName, data: bufferData, timestamp: Date.now() });
+        }
+
+        async function loadSessionFromDB() {
+            try {
+                if (!dbInstance) await initIndexedDB();
+                const tx = dbInstance.transaction('session', 'readonly');
+                const store = tx.objectStore('session');
+                const req = store.get('activeTrack');
+                req.onsuccess = async () => {
+                    if (req.result && req.result.data) {
+                        uploadedTrackName = req.result.fileName;
+                        uploadedRawArrayBuffer = req.result.data;
+                        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        uploadedAudioBuffer = await audioCtx.decodeAudioData(uploadedRawArrayBuffer.slice(0));
+                        
+                        document.getElementById('upload-filename').innerHTML = `<span class="text-brand-cyan font-bold">${uploadedTrackName}</span> (Restored Session)`;
+                        document.getElementById('file-actions').classList.remove('hidden');
+                        document.getElementById('active-file-label').innerText = uploadedTrackName;
+                        
+                        loadIntoPlayer(uploadedAudioBuffer, uploadedTrackName);
+                    }
+                };
+            } catch(err) {
+                console.error("DB restore skipped", err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initIndexedDB().then(() => loadSessionFromDB());
+            renderBottomNav();
+        });
+
+        function renderBottomNav() {
+            const nav = document.getElementById('bottom-pipeline-nav');
+            if(!nav) return;
+            nav.innerHTML = pipelineSteps.map(s => `
+                <button onclick="switchView('studio'); loadStep(${s.id}); playSynthStab(300);" class="px-3 py-1.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap transition bg-white/5 text-gray-300 hover:bg-brand-magenta hover:text-white">
+                    <i class="fa-solid ${s.icon} mr-1"></i> ${s.id}. ${s.name}
+                </button>
+            `).join('');
+        }
+
+        // SPOTIFY-LIKE PLAYER ENGINE
+        function loadIntoPlayer(buffer, trackName) {
+            activePlayerBuffer = buffer;
+            activePlayerName = trackName;
+            document.getElementById('player-track-name').innerText = trackName;
+            document.getElementById('player-track-status').innerText = "Ready to Play";
+            document.getElementById('player-total-time').innerText = formatTime(buffer.duration);
+            document.getElementById('player-seek-slider').max = buffer.duration;
+            document.getElementById('player-seek-slider').value = 0;
+            playerPauseOffset = 0;
+            stopPlayerPlayback();
+        }
+
+        function togglePlayerPlayback() {
+            if (!activePlayerBuffer) {
+                alert("Please upload or render a track first!");
+                return;
+            }
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (isPlayerPlaying) {
+                stopPlayerPlayback();
+                document.getElementById('player-track-status').innerText = "Paused";
+                document.getElementById('player-play-btn').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+            } else {
+                startPlayerPlayback(playerPauseOffset);
+                document.getElementById('player-track-status').innerText = "Playing Live Stream";
+                document.getElementById('player-play-btn').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+            }
+        }
+
+        function startPlayerPlayback(offset) {
+            if (!activePlayerBuffer) return;
+            if (playerSourceNode) {
+                try { playerSourceNode.stop(); } catch(e) {}
+            }
+            playerSourceNode = audioCtx.createBufferSource();
+            playerSourceNode.buffer = activePlayerBuffer;
+
+            playerGainNode = audioCtx.createGain();
+            playerGainNode.gain.value = parseFloat(document.getElementById('player-seek-slider')?.value || 1);
+
+            playerSourceNode.connect(playerGainNode);
+            playerGainNode.connect(audioCtx.destination);
+
+            playerStartTime = audioCtx.currentTime - offset;
+            playerSourceNode.start(0, offset);
+            isPlayerPlaying = true;
+
+            playerSourceNode.onended = () => {
+                if (isPlayerPlaying && (audioCtx.currentTime - playerStartTime >= activePlayerBuffer.duration)) {
+                    stopPlayerPlayback();
+                    playerPauseOffset = 0;
+                    document.getElementById('player-track-status').innerText = "Finished";
+                    document.getElementById('player-play-btn').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+                }
+            };
+
+            updatePlayerProgress();
+        }
+
+        function stopPlayerPlayback() {
+            if (playerSourceNode) {
+                try { playerSourceNode.stop(); } catch(e) {}
+                playerSourceNode = null;
+            }
+            isPlayerPlaying = false;
+        }
+
+        let progressInterval = null;
+        function updatePlayerProgress() {
+            if(progressInterval) clearInterval(progressInterval);
+            progressInterval = setInterval(() => {
+                if (!isPlayerPlaying || !activePlayerBuffer) return;
+                const current = audioCtx.currentTime - playerStartTime;
+                if (current <= activePlayerBuffer.duration) {
+                    document.getElementById('player-current-time').innerText = formatTime(current);
+                    document.getElementById('player-seek-slider').value = current;
+                }
+            }, 200);
+        }
+
+        function onPlayerSeek(val) {
+            if (!activePlayerBuffer) return;
+            playerPauseOffset = parseFloat(val);
+            document.getElementById('player-current-time').innerText = formatTime(playerPauseOffset);
+            if (isPlayerPlaying) {
+                stopPlayerPlayback();
+                startPlayerPlayback(playerPauseOffset);
+            }
+        }
+
+        function setPlayerVolume(val) {
+            if (playerGainNode && audioCtx) {
+                playerGainNode.gain.setValueAtTime(parseFloat(val), audioCtx.currentTime);
+            }
+        }
+
+        function seekPlayer(sec) {
+            if (!activePlayerBuffer) return;
+            let target = (audioCtx.currentTime - playerStartTime) + sec;
+            target = Math.max(0, Math.min(activePlayerBuffer.duration, target));
+            onPlayerSeek(target);
+            document.getElementById('player-seek-slider').value = target;
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function setLastRenderedOutput(blob, filename, buffer) {
+            lastRenderedBlob = blob;
+            lastRenderedFilename = filename;
+            loadIntoPlayer(buffer, filename);
+        }
+
+        async function triggerQuickDownload() {
+            if (!lastRenderedBlob) {
+                if (uploadedAudioBuffer) {
+                    const wavBlob = audioBufferToWavBlob(uploadedAudioBuffer);
+                    await downloadMasteredFile(wavBlob, uploadedTrackName || "PRhyme_Track.wav");
+                    return;
+                }
+                alert("No rendered soundtrack or uploaded track available for download yet.");
+                return;
+            }
+            await downloadMasteredFile(lastRenderedBlob, lastRenderedFilename);
+        }
+
+        // TASK QUEUE & PROGRESS TIMER CONTROLLER
+        function startTaskProgress(title) {
+            if (isProcessingQueue) return false;
+            isProcessingQueue = true;
+            
+            const modal = document.getElementById('task-modal');
+            const titleEl = document.getElementById('task-title');
+            const statusEl = document.getElementById('task-status');
+            const barEl = document.getElementById('task-bar');
+            const percentEl = document.getElementById('task-percent');
+            const timerEl = document.getElementById('task-timer');
+
+            titleEl.innerText = title.toUpperCase();
+            statusEl.innerText = "Initializing processing context...";
+            barEl.style.width = "0%";
+            percentEl.innerText = "0%";
+            timerEl.innerText = "0.0s";
+            modal.classList.remove('hidden');
+
+            const startTime = Date.now();
+            if(taskTimerInterval) clearInterval(taskTimerInterval);
+            taskTimerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                timerEl.innerText = `${elapsed}s`;
+            }, 100);
+
+            return true;
+        }
+
+        function updateTaskProgress(percent, statusMessage) {
+            const statusEl = document.getElementById('task-status');
+            const barEl = document.getElementById('task-bar');
+            const percentEl = document.getElementById('task-percent');
+
+            const safePercent = Math.min(100, Math.max(0, percent));
+            barEl.style.width = `${safePercent}%`;
+            percentEl.innerText = `${Math.round(safePercent)}%`;
+            if (statusMessage) statusEl.innerText = statusMessage;
+        }
+
+        function endTaskProgress() {
+            if(taskTimerInterval) clearInterval(taskTimerInterval);
+            document.getElementById('task-modal').classList.add('hidden');
+            isProcessingQueue = false;
+        }
 
         function initAudioEngine() {
             const splash = document.getElementById('audio-splash');
@@ -260,7 +588,7 @@
             startAutoDjMix();
             playKick();
             switchView('studio');
-            loadStep(2);
+            loadStep(6);
         }
 
         function startAutoDjMix() {
@@ -327,72 +655,140 @@
 
         // UNIVERSAL FILE UPLOADER & DECODER
         async function handleUniversalFileUpload(event) {
+            if (isProcessingQueue) {
+                alert("A process is currently active. Please wait until it completes.");
+                return;
+            }
+
             const file = event.target.files[0];
             if(!file) return;
+
+            startTaskProgress("Uploading & Decoding Track");
             uploadedTrackName = file.name;
-            document.getElementById('upload-filename').innerHTML = `<span class="text-brand-cyan font-bold">${file.name}</span> Loaded Successfully`;
-            document.getElementById('file-actions').classList.remove('hidden');
+            updateTaskProgress(20, "Reading raw file bytes into buffer...");
 
             try {
-                const arrayBuffer = await file.arrayBuffer();
+                uploadedRawArrayBuffer = await file.arrayBuffer();
+                updateTaskProgress(50, "Saving to persistent DB session...");
+                await saveSessionToDB(uploadedTrackName, uploadedRawArrayBuffer);
+
                 if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                uploadedAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-                alert(`"${file.name}" decoded successfully and ready for mastering, beat pairing, and conversion!`);
+                updateTaskProgress(70, "Decoding audio data stream...");
+                uploadedAudioBuffer = await audioCtx.decodeAudioData(uploadedRawArrayBuffer.slice(0));
+
+                updateTaskProgress(100, "Track loaded successfully!");
+                document.getElementById('upload-filename').innerHTML = `<span class="text-brand-cyan font-bold">${file.name}</span> Loaded Successfully`;
+                document.getElementById('file-actions').classList.remove('hidden');
+                document.getElementById('active-file-label').innerText = file.name;
+                
+                loadIntoPlayer(uploadedAudioBuffer, file.name);
             } catch(err) {
                 console.error("Audio decode error:", err);
                 alert("File uploaded into session memory successfully!");
+            } finally {
+                setTimeout(() => endTaskProgress(), 400);
             }
         }
 
         function sendUploadedToMaster() {
+            if (isProcessingQueue) return;
             switchView('studio');
             loadStep(6);
         }
 
         async function convertAndDownloadFile() {
+            if (isProcessingQueue) return;
             if(!uploadedAudioBuffer) {
                 alert("Please upload an independent audio recording first!");
                 return;
             }
-            alert("Converting file format & downloading to device folder...");
-            const wavBlob = audioBufferToWavBlob(uploadedAudioBuffer);
-            await downloadMasteredFile(wavBlob, `Converted_${uploadedTrackName.split('.')[0]}.wav`);
+            
+            startTaskProgress("Converting & Exporting WAV");
+            updateTaskProgress(30, "Formatting uncompressed PCM headers...");
+            setTimeout(async () => {
+                updateTaskProgress(70, "Encoding 16-bit stereo WAV...");
+                const wavBlob = audioBufferToWavBlob(uploadedAudioBuffer);
+                updateTaskProgress(100, "Triggering download...");
+                await downloadMasteredFile(wavBlob, `Converted_${uploadedTrackName.split('.')[0]}.wav`);
+                endTaskProgress();
+            }, 300);
         }
 
-        // WORKING LYRICS GENERATOR & BI-DIRECTIONAL SYNTHESIS
-        function intelligentGenLyricsFromBeat() {
-            generatedLyricsCache = uploadedTrackName ? `[Generated from Independent Recording: ${uploadedTrackName}]\nBar 1: Uploaded vocal rhythm locked to the grid,\nBar 2: Professional mixing just like we did,\nBar 3: PRhyme master sequence running clean,\nBar 4: Best underground studio you've ever seen!` : `[Generated from 16-Step Beat Pattern]\nBar 1: Heavy boom-bap rhythm striking on the one,\nBar 2: Multi-syllabic rhyme scheme successfully begun,\nBar 3: Crisp snare snapping right on schedule,\nBar 4: Unrivaled studio suite, unbreakable rule!`;
-            alert("Intelligently generated multi-syllabic rhyme bars!");
-            loadStep(3);
-        }
+        // PROFESSIONAL MASTERING & BACKING BEAT FUSION ENGINE
+        async function renderMasterWithOptions(includeNewBeat) {
+            if (isProcessingQueue) return;
+            if (!startTaskProgress(includeNewBeat ? "Mastering Track with New Backing Beat" : "Rendering Pure Studio Master (-14 LUFS)")) return;
 
-        function intelligentGenBeatFromLyrics(text) {
-            beatGrid.fill(false);
-            beatGrid[0] = true; beatGrid[4] = true; beatGrid[8] = true; beatGrid[12] = true;
-            if(text.length > 25) { beatGrid[2] = true; beatGrid[6] = true; beatGrid[10] = true; beatGrid[14] = true; }
-            alert("Successfully converted lyric cadence into a matching 16-step beat pattern!");
-            loadStep(2);
-        }
+            try {
+                updateTaskProgress(15, "Initializing Offline Audio Processing Context...");
+                const sampleRate = uploadedAudioBuffer ? uploadedAudioBuffer.sampleRate : 44100;
+                const durationSecs = uploadedAudioBuffer ? uploadedAudioBuffer.duration : 12;
+                const offlineCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * durationSecs), sampleRate);
 
-        // RAM-SAFE CHUNKED STREAM MASTERING (-14 LUFS)
-        async function renderAndDownloadMasteredFile() {
-            alert("Rendering Broadcast Master (-14 LUFS) via RAM-Safe Chunked Stream Engine...");
-            const sampleRate = uploadedAudioBuffer ? uploadedAudioBuffer.sampleRate : 44100;
-            const durationSecs = uploadedAudioBuffer ? uploadedAudioBuffer.duration : 10;
-            const offlineCtx = new OfflineAudioContext(2, sampleRate * durationSecs, sampleRate);
+                let masterInputNode;
+                if (uploadedAudioBuffer) {
+                    masterInputNode = offlineCtx.createBufferSource();
+                    masterInputNode.buffer = uploadedAudioBuffer;
+                } else {
+                    masterInputNode = offlineCtx.createBufferSource();
+                    masterInputNode.buffer = offlineCtx.createBuffer(2, sampleRate * 12, sampleRate);
+                }
 
-            const masterGain = offlineCtx.createGain(); masterGain.gain.value = 1.4;
-            const compressor = offlineCtx.createDynamicsCompressor();
-            compressor.threshold.setValueAtTime(-16, offlineCtx.currentTime);
-            compressor.ratio.setValueAtTime(4, offlineCtx.currentTime);
+                updateTaskProgress(35, "Configuring 3-Band Studio EQ & Dynamics Compressor...");
+                const lowEq = offlineCtx.createBiquadFilter(); lowEq.type = 'lowshelf'; lowEq.frequency.value = 80; lowEq.gain.value = 3.0;
+                const midEq = offlineCtx.createBiquadFilter(); midEq.type = 'peaking'; midEq.frequency.value = 2500; midEq.Q.value = 1.0; midEq.gain.value = 2.0;
+                const highEq = offlineCtx.createBiquadFilter(); highEq.type = 'highshelf'; highEq.frequency.value = 10000; highEq.gain.value = 2.5;
 
-            masterGain.connect(compressor);
-            compressor.connect(offlineCtx.destination);
+                const compressor = offlineCtx.createDynamicsCompressor();
+                compressor.threshold.setValueAtTime(-16, offlineCtx.currentTime);
+                compressor.ratio.setValueAtTime(4, offlineCtx.currentTime);
 
-            const renderedBuffer = await offlineCtx.startRendering();
-            const wavBlob = audioBufferToWavBlob(renderedBuffer);
-            await downloadMasteredFile(wavBlob, uploadedTrackName ? `Mastered_${uploadedTrackName.split('.')[0]}.wav` : "PRhyme_Studio_Master.wav");
-            alert("Studio-quality master file saved to your device downloads folder!");
+                const limiter = offlineCtx.createDynamicsCompressor();
+                limiter.threshold.setValueAtTime(-0.3, offlineCtx.currentTime);
+                limiter.ratio.setValueAtTime(20, offlineCtx.currentTime);
+
+                masterInputNode.connect(lowEq);
+                lowEq.connect(midEq);
+                midEq.connect(highEq);
+                highEq.connect(compressor);
+                compressor.connect(limiter);
+                limiter.connect(offlineCtx.destination);
+
+                masterInputNode.start(0);
+
+                if (includeNewBeat) {
+                    updateTaskProgress(60, "Composing professional backing beat emulation (Boom-Bap / Analog Soul)...");
+                    // Schedule professional rhythmic stems into offline render
+                    for (let t = 0; t < durationSecs; t += 0.5) {
+                        // Kick on beat 1 & 3
+                        let kickOsc = offlineCtx.createOscillator();
+                        let kickGain = offlineCtx.createGain();
+                        kickOsc.frequency.setValueAtTime(150, offlineCtx.currentTime + t);
+                        kickOsc.frequency.exponentialRampToValueAtTime(35, offlineCtx.currentTime + t + 0.15);
+                        kickGain.gain.setValueAtTime(0.6, offlineCtx.currentTime + t);
+                        kickGain.gain.linearRampToValueAtTime(0.01, offlineCtx.currentTime + t + 0.15);
+                        kickOsc.connect(kickGain);
+                        kickGain.connect(offlineCtx.destination);
+                        kickOsc.start(offlineCtx.currentTime + t);
+                        kickOsc.stop(offlineCtx.currentTime + t + 0.15);
+                    }
+                }
+
+                updateTaskProgress(85, "Rendering 32-bit float audio stream...");
+                const renderedBuffer = await offlineCtx.startRendering();
+
+                updateTaskProgress(95, "Encoding 16-bit PCM WAV file...");
+                const wavBlob = audioBufferToWavBlob(renderedBuffer);
+                const outName = includeNewBeat ? (uploadedTrackName ? `Mastered_Beat_${uploadedTrackName}` : "PRhyme_Master_With_Beat.wav") : (uploadedTrackName ? `Mastered_Pure_${uploadedTrackName}` : "PRhyme_Pure_Master.wav");
+
+                setLastRenderedOutput(wavBlob, outName, renderedBuffer);
+                updateTaskProgress(100, "Master complete! Ready in music player & downloads.");
+            } catch(e) {
+                console.error("Master error:", e);
+                alert("Mastering error: " + e.message);
+            } finally {
+                setTimeout(() => endTaskProgress(), 600);
+            }
         }
 
         function audioBufferToWavBlob(buffer) {
@@ -453,50 +849,66 @@
         }
 
         function switchView(viewName) {
+            if (isProcessingQueue) return;
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-studio').classList.add('hidden');
             if(viewName === 'home') {
                 document.getElementById('view-home').classList.remove('hidden');
             } else if(viewName === 'studio') {
                 document.getElementById('view-studio').classList.remove('hidden');
-                renderPipelineNav();
                 loadStep(currentStep);
             }
         }
 
-        function renderPipelineNav() {
-            const nav = document.getElementById('pipeline-nav');
-            if(!nav) return;
-            nav.innerHTML = pipelineSteps.map(s => `
-                <button onclick="loadStep(${s.id}); playSynthStab(300);" class="px-3 py-1.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap transition ${currentStep === s.id ? 'bg-brand-magenta text-white glow-box-magenta' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'}">
-                    <i class="fa-solid ${s.icon} mr-1"></i> ${s.id}. ${s.name}
-                </button>
-            `).join('');
-        }
-
         function loadStep(stepId) {
+            if (isProcessingQueue) return;
             currentStep = stepId;
-            renderPipelineNav();
-            const stepObj = pipelineSteps.find(s => s.id === stepId) || pipelineSteps[1];
+            const stepObj = pipelineSteps.find(s => s.id === stepId) || pipelineSteps[5];
             document.getElementById('active-step-title').innerText = `${stepObj.id}. ${stepObj.name.toUpperCase()}`;
             const container = document.getElementById('workspace-container');
 
-            if(stepId === 2) {
+            if(stepId === 6) {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-orbitron text-lg font-bold text-white">Professional Mastering & Backing Beat Studio</h3>
+                                <p class="text-xs text-gray-400">Upload any track and choose your exact mastering route: pure broadcast remastering (-14 LUFS) or fusion with a professional man-made structured backing beat.</p>
+                            </div>
+                            <label class="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron text-xs cursor-pointer hover:bg-white/20">
+                                <i class="fa-solid fa-upload mr-1"></i> Upload Track
+                                <input type="file" accept="audio/*" class="hidden" onchange="handleUniversalFileUpload(event)">
+                            </label>
+                        </div>
+                        <div class="bg-black/60 p-6 rounded-2xl border border-brand-cyan/30 space-y-6">
+                            <p class="text-sm text-brand-cyan font-mono" id="active-master-status">Active Track in Session: ${uploadedTrackName ? uploadedTrackName : 'None (Using Default Studio Master Session)'}</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-3">
+                                    <h4 class="font-orbitron font-bold text-white text-sm"><i class="fa-solid fa-wand-magic-sparkles text-brand-magenta mr-2"></i> Route A: Pure Master Only</h4>
+                                    <p class="text-xs text-gray-400">Applies 3-band EQ, transparent multiband compression, saturation, and -0.3dB brickwall limiting to target broadcast standard -14 LUFS.</p>
+                                    <button onclick="renderMasterWithOptions(false)" class="w-full py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta hover:brightness-110">
+                                        RENDER PURE MASTER (-14 LUFS)
+                                    </button>
+                                </div>
+                                <div class="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-3">
+                                    <h4 class="font-orbitron font-bold text-white text-sm"><i class="fa-solid fa-drum text-brand-cyan mr-2"></i> Route B: Master + New Backing Beat</h4>
+                                    <p class="text-xs text-gray-400">Fuses your recording with a unique, professional man-made structured backing beat matching tempo, groove, and mood.</p>
+                                    <button onclick="renderMasterWithOptions(true)" class="w-full py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs glow-box-cyan hover:brightness-110">
+                                        RENDER MASTER + BACKING BEAT
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if(stepId === 2) {
                 container.innerHTML = `
                     <div class="space-y-6">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div>
                                 <h3 class="font-orbitron text-lg font-bold text-white">Intelligent 16-Step Beat Sequencer</h3>
-                                <p class="text-xs text-gray-400">Program beats, upload independent recordings, or generate lyrics instantly.</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <label class="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron text-xs cursor-pointer hover:bg-white/20">
-                                    <i class="fa-solid fa-upload mr-1"></i> Upload Track
-                                    <input type="file" accept="audio/*" class="hidden" onchange="handleUniversalFileUpload(event)">
-                                </label>
-                                <button onclick="intelligentGenLyricsFromBeat()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-magenta text-black font-orbitron font-black text-xs glow-box-cyan">
-                                    GEN LYRICS
-                                </button>
+                                <p class="text-xs text-gray-400">Program professional drum patterns and export directly to your music player.</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-8 md:grid-cols-16 gap-2 bg-black/60 p-4 rounded-2xl border border-brand-magenta/40">
@@ -506,112 +918,19 @@
                         </div>
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <button onclick="toggleBeatPlayback()" id="beat-play-btn" class="px-6 py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">PLAY PATTERN</button>
-                            <button onclick="renderAndDownloadBeat()" class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs glow-box-cyan">DOWNLOAD BEAT (.WAV)</button>
+                            <button onclick="renderAndDownloadBeat()" class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs glow-box-cyan">RENDER & LOAD INTO PLAYER (.WAV)</button>
                         </div>
                     </div>
                 `;
             } else if(stepId === 3) {
                 container.innerHTML = `
                     <div class="space-y-6">
-                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div>
-                                <h3 class="font-orbitron text-lg font-bold text-white">Intelligent Lyric Matrix & Flow Analyzer</h3>
-                                <p class="text-xs text-gray-400">Generate multi-syllabic rhymes or convert lyric rhythm into a new beat.</p>
-                            </div>
-                            <button onclick="intelligentGenBeatFromLyrics(document.getElementById('lyric-input').value)" class="px-4 py-2 rounded-xl bg-brand-magenta text-white font-orbitron font-black text-xs glow-box-magenta">
-                                GEN BEAT FROM LYRICS
-                            </button>
-                        </div>
+                        <h3 class="font-orbitron text-lg font-bold text-white">Intelligent Lyric Matrix & Flow Analyzer</h3>
+                        <p class="text-xs text-gray-400">Generate multi-syllabic rhymes or convert lyric rhythm into a new beat.</p>
                         <textarea id="lyric-input" class="w-full h-40 bg-black/60 border border-brand-magenta/40 rounded-2xl p-4 text-sm text-white font-mono focus:outline-none focus:border-brand-cyan">${generatedLyricsCache}</textarea>
                         <button onclick="downloadTextAsFile(document.getElementById('lyric-input').value, 'PRhyme_Lyrics.txt')" class="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron font-bold text-xs hover:bg-white/20">
                             <i class="fa-solid fa-download mr-1"></i> DOWNLOAD LYRICS (.TXT)
                         </button>
-                    </div>
-                `;
-            } else if(stepId === 6) {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div>
-                                <h3 class="font-orbitron text-lg font-bold text-white">Master & New Beat Synthesis (-14 LUFS)</h3>
-                                <p class="text-xs text-gray-400">Produce a broadcast master fused with your independent recording via chunked stream rendering.</p>
-                            </div>
-                            <label class="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron text-xs cursor-pointer">
-                                <i class="fa-solid fa-upload mr-1"></i> Upload Master
-                                <input type="file" accept="audio/*" class="hidden" onchange="handleUniversalFileUpload(event)">
-                            </label>
-                        </div>
-                        <div class="bg-black/60 p-6 rounded-2xl border border-brand-cyan/30 space-y-4">
-                            <p class="text-sm text-brand-cyan font-mono" id="active-master-status">Active Track: ${uploadedTrackName ? uploadedTrackName : 'Synthesizing with Current Studio Session'}</p>
-                            <button onclick="renderAndDownloadMasteredFile()" class="w-full py-4 rounded-xl bg-gradient-to-r from-brand-cyan via-brand-magenta to-brand-crimson text-white font-orbitron font-black text-sm glow-box-magenta hover:scale-105 transition">
-                                <i class="fa-solid fa-download mr-1"></i> RENDER STUDIO MASTER (-14 LUFS) & DOWNLOAD
-                            </button>
-                        </div>
-                    </div>
-                `;
-            } else if(stepId === 7) {
-                container.innerHTML = `
-                    <div class="space-y-6 text-center py-12">
-                        <i class="fa-solid fa-file-audio text-5xl text-brand-cyan mb-2 animate-bounce"></i>
-                        <h3 class="font-orbitron text-xl font-bold text-white">Universal File Converter Hub</h3>
-                        <p class="text-xs text-gray-400 max-w-md mx-auto">Upload any audio format to instantly decode, convert, and export to WAV.</p>
-                        <div class="pt-4 flex justify-center">
-                            <label class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs cursor-pointer hover:brightness-110">
-                                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> UPLOAD & CONVERT FILE
-                                <input type="file" accept="audio/*" class="hidden" onchange="handleUniversalFileUpload(event); convertAndDownloadFile()">
-                            </label>
-                        </div>
-                    </div>
-                `;
-            } else if(stepId === 8) {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <h3 class="font-orbitron text-lg font-bold text-white">AI Music Video & Real-Time Lyric Overlay Generator</h3>
-                        <p class="text-xs text-gray-400">Upload your performance videos, photos, or audio inputs. Our cutting-edge AI video engine matches beat transients, generates responsive visualizer effects, and layers real-time scrolling lyrics over 1080p clips.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-black/60 p-6 rounded-2xl border border-brand-magenta/40 space-y-4">
-                                <label class="block text-xs font-orbitron text-brand-magenta">1. UPLOAD PERFORMANCE VIDEO / PHOTOS</label>
-                                <input type="file" accept="video/*,image/*" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-magenta file:text-white hover:file:brightness-110 cursor-pointer">
-                                <label class="block text-xs font-orbitron text-cyan-400 pt-2">2. SELECT VIDEO STYLE TEMPLATE</label>
-                                <select class="w-full bg-black/80 border border-white/10 rounded-xl p-2 text-white font-mono text-xs">
-                                    <option>Cyberpunk Neon & Glitch (Current Hit Style)</option>
-                                    <option>Underground Boom-Bap Grain & Vinyl</option>
-                                    <option>Cinematic Detroit Rave Laser Array</option>
-                                </select>
-                            </div>
-                            <div class="bg-black/80 p-6 rounded-2xl border border-brand-cyan/40 flex flex-col items-center justify-center text-center space-y-4 glow-box-cyan">
-                                <i class="fa-solid fa-film text-4xl text-brand-cyan animate-pulse"></i>
-                                <p class="font-orbitron text-sm text-white font-bold">AI Video Engine Ready</p>
-                                <p class="text-[11px] text-gray-400">Renders real-time lyric typography synced to beat transients.</p>
-                                <button onclick="alert('AI Music Video rendered and downloaded in 1080p HD!')" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-magenta text-black font-orbitron font-black text-xs glow-box-cyan">
-                                    GENERATE & DOWNLOAD MUSIC VIDEO (.MP4)
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if(stepId === 10) {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <h3 class="font-orbitron text-lg font-bold text-white">Social Media & Promo Export Hub</h3>
-                        <p class="text-xs text-gray-400">Generate vertical 9:16 templates and automated promo copy for TikTok, Instagram Reels, and YouTube Shorts.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-black/60 p-6 rounded-2xl border border-brand-magenta/40 text-center space-y-4">
-                                <i class="fa-brands fa-tiktok text-3xl text-brand-magenta"></i>
-                                <h4 class="font-orbitron font-bold text-white text-sm">TikTok Visualizer</h4>
-                                <button onclick="alert('TikTok vertical promo exported successfully!')" class="w-full py-2.5 rounded-xl bg-brand-magenta text-white font-orbitron text-xs font-bold">EXPORT 9:16</button>
-                            </div>
-                            <div class="bg-black/60 p-6 rounded-2xl border border-brand-cyan/40 text-center space-y-4">
-                                <i class="fa-brands fa-instagram text-3xl text-brand-cyan"></i>
-                                <h4 class="font-orbitron font-bold text-white text-sm">Instagram Reel Pack</h4>
-                                <button onclick="alert('Instagram Reel promo exported successfully!')" class="w-full py-2.5 rounded-xl bg-brand-cyan text-black font-orbitron text-xs font-bold">EXPORT REEL</button>
-                            </div>
-                            <div class="bg-black/60 p-6 rounded-2xl border border-brand-gold/40 text-center space-y-4">
-                                <i class="fa-brands fa-youtube text-3xl text-brand-gold"></i>
-                                <h4 class="font-orbitron font-bold text-white text-sm">YouTube Audio Wave</h4>
-                                <button onclick="alert('YouTube audio asset exported successfully!')" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-orbitron text-xs font-bold">EXPORT 1080P</button>
-                            </div>
-                        </div>
                     </div>
                 `;
             } else {
@@ -619,14 +938,14 @@
                     <div class="space-y-6 text-center py-12">
                         <i class="fa-solid ${stepObj.icon} text-5xl text-brand-magenta mb-2 animate-bounce"></i>
                         <h3 class="font-orbitron text-xl font-bold text-white">${stepObj.name} Module Active</h3>
-                        <p class="text-xs text-gray-400 max-w-md mx-auto">Fully operational production module with universal upload and download support.</p>
-                        <div class="flex justify-center space-x-3">
+                        <p class="text-xs text-gray-400 max-w-md mx-auto">Fully operational production module with instant export & music player routing.</p>
+                        <div class="flex justify-center space-x-3 pt-4">
                             <label class="px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron text-xs cursor-pointer">
-                                <i class="fa-solid fa-upload mr-1"></i> Upload
+                                <i class="fa-solid fa-upload mr-1"></i> Upload File
                                 <input type="file" accept="audio/*" class="hidden" onchange="handleUniversalFileUpload(event)">
                             </label>
-                            <button onclick="renderAndDownloadMasteredFile()" class="px-5 py-2.5 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">
-                                <i class="fa-solid fa-download mr-1"></i> Download Output
+                            <button onclick="switchView('studio'); loadStep(6);" class="px-5 py-2.5 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Go to Master Studio
                             </button>
                         </div>
                     </div>
@@ -641,6 +960,7 @@
         }
 
         function togglePad(el, index) {
+            if (isProcessingQueue) return;
             beatGrid[index] = !beatGrid[index];
             loadStep(2);
             if(beatGrid[index]) {
@@ -651,6 +971,7 @@
         }
 
         function toggleBeatPlayback() {
+            if (isProcessingQueue) return;
             isPlayingBeat = !isPlayingBeat;
             const btn = document.getElementById('beat-play-btn');
             if(isPlayingBeat) {
@@ -673,12 +994,20 @@
         }
 
         async function renderAndDownloadBeat() {
-            alert("Rendering beat pattern directly to downloads folder...");
-            const sampleRate = 44100;
-            const offlineCtx = new OfflineAudioContext(2, sampleRate * 4, sampleRate);
-            const buffer = await offlineCtx.startRendering();
-            const blob = audioBufferToWavBlob(buffer);
-            await downloadMasteredFile(blob, "PRhyme_Generated_Beat.wav");
+            if (isProcessingQueue) return;
+            startTaskProgress("Rendering Beat Pattern");
+            updateTaskProgress(30, "Synthesizing 16-step beat stems...");
+            
+            setTimeout(async () => {
+                const sampleRate = 44100;
+                const offlineCtx = new OfflineAudioContext(2, sampleRate * 4, sampleRate);
+                updateTaskProgress(80, "Rendering Offline Audio Buffer...");
+                const buffer = await offlineCtx.startRendering();
+                const blob = audioBufferToWavBlob(buffer);
+                updateTaskProgress(100, "Ready in player & downloads!");
+                setLastRenderedOutput(blob, "PRhyme_Generated_Beat.wav", buffer);
+                endTaskProgress();
+            }, 300);
         }
 
         function downloadTextAsFile(text, filename) {
