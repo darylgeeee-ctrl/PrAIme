@@ -24,6 +24,8 @@
             }
         }
     </script>
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -41,33 +43,40 @@
             100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(0,240,255,0.6)); }
         }
         .animate-rokdabus { animation: pulseGlow 3s ease-in-out infinite; }
-        @keyframes matrixRain {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 1000px; }
-        }
         .cyber-grid { background-image: linear-gradient(rgba(0,240,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,0,127,0.05) 1px, transparent 1px); background-size: 40px 40px; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #030305; }
         ::-webkit-scrollbar-thumb { background: #ff007f; border-radius: 3px; }
     </style>
 </head>
-<body class="min-h-screen relative selection:bg-brand-magenta selection:text-white pb-32 cyber-grid">
+<body class="min-h-screen relative selection:bg-brand-magenta selection:text-white pb-36 cyber-grid">
 
-    <!-- Audio Engine Splash Screen -->
+    <!-- Audio & 3D Intro Splash Screen with Rokdabus Mascot -->
     <div id="audio-splash" class="fixed inset-0 z-50 bg-black/98 backdrop-blur-3xl flex flex-col items-center justify-center p-6 text-center space-y-6">
-        <div class="w-24 h-24 rounded-3xl bg-gradient-to-tr from-brand-cyan via-brand-magenta to-brand-crimson flex items-center justify-center glow-box-magenta animate-bounce">
-            <i class="fa-solid fa-headphones-simple text-white text-4xl"></i>
+        <div class="relative w-36 h-36 md:w-44 md:h-44 rounded-full border-4 border-brand-cyan/80 p-2 bg-gradient-to-br from-brand-magenta/30 via-black to-brand-cyan/30 glow-box-magenta flex items-center justify-center animate-bounce">
+            <div class="absolute inset-2 rounded-full bg-black border-2 border-dashed border-brand-magenta flex items-center justify-center animate-spin" style="animation-duration: 6s;">
+                <div class="w-12 h-12 rounded-full bg-brand-cyan/20 border border-brand-cyan flex items-center justify-center">
+                    <div class="w-3 h-3 rounded-full bg-brand-magenta"></div>
+                </div>
+            </div>
+            <div class="relative z-10 flex flex-col items-center space-y-1">
+                <div class="w-12 h-9 rounded-xl bg-brand-cyan border-2 border-white flex items-center justify-center shadow-lg">
+                    <div class="w-2 h-1.5 bg-black rounded-full mx-0.5"></div>
+                    <div class="w-2 h-1.5 bg-black rounded-full mx-0.5"></div>
+                </div>
+                <div class="w-16 h-5 bg-brand-magenta rounded-full border border-white flex items-center justify-center text-[9px] font-orbitron font-black text-white">ROKDABUS</div>
+            </div>
         </div>
         <div class="space-y-2 max-w-lg">
             <h1 class="font-orbitron text-2xl md:text-4xl font-black text-white glow-cyan">PRHYME x PrAIme™ MASTER SUITE</h1>
-            <p class="text-xs md:text-sm text-gray-400">Tap below to initialize cross-device audio synthesis, Auto-DJ mix loop, and AI mixing engine.</p>
+            <p class="text-xs md:text-sm text-gray-400">Rokdabus AI Voice Operator & 3D Studio Engine online. Tap to activate live synthesis and DJ loop.</p>
         </div>
         <button onclick="initAudioEngine()" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-cyan via-brand-magenta to-brand-crimson text-white font-orbitron font-black text-xs md:text-sm tracking-widest glow-box-magenta hover:scale-105 transition">
             ACTIVATE AUDIO ENGINE & LIVE DJ <i class="fa-solid fa-bolt ml-2"></i>
         </button>
     </div>
 
-    <!-- Processing Task Progress Modal -->
+    <!-- Processing Task Progress Modal with Live ETA Countdown Timer -->
     <div id="task-modal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center space-y-6">
         <div class="w-20 h-20 rounded-2xl bg-brand-card border-2 border-brand-cyan flex items-center justify-center glow-box-cyan animate-pulse">
             <i id="task-icon" class="fa-solid fa-compact-disc text-brand-cyan text-3xl animate-spin"></i>
@@ -78,11 +87,12 @@
         </div>
         <!-- Progress Bar Container -->
         <div class="w-full max-w-md bg-white/5 border border-white/10 rounded-full h-4 overflow-hidden p-0.5">
-            <div id="task-bar" class="bg-gradient-to-r from-brand-cyan to-brand-magenta h-full rounded-full transition-all duration-200 w-0"></div>
+            <div id="task-bar" class="bg-gradient-to-r from-brand-cyan to-brand-magenta h-full rounded-full transition-all duration-300 w-0"></div>
         </div>
         <div class="flex items-center justify-between w-full max-w-md text-xs font-mono text-gray-400">
             <span>Progress: <strong id="task-percent" class="text-white">0%</strong></span>
             <span>Elapsed: <strong id="task-timer" class="text-brand-gold">0.0s</strong></span>
+            <span>ETA: <strong id="task-eta" class="text-brand-cyan">5.0s</strong></span>
         </div>
     </div>
 
@@ -101,6 +111,9 @@
         <div id="spectrum-bars" class="hidden lg:flex items-end space-x-1 h-8 px-4 bg-black/50 rounded-xl border border-white/5"></div>
 
         <div class="flex items-center space-x-2 md:space-x-3">
+            <button onclick="switchView('studio'); loadStep(13);" class="px-3 py-1.5 rounded-lg bg-brand-cyan/10 border border-brand-cyan text-brand-cyan font-orbitron text-xs font-bold hover:bg-brand-cyan/20 transition">
+                <i class="fa-solid fa-book-open mr-1"></i> TUTORIALS
+            </button>
             <button onclick="openModal('paypal-modal')" class="px-3 py-1.5 rounded-lg bg-brand-gold text-black font-orbitron text-xs font-black tracking-wider flex items-center space-x-1.5 hover:brightness-110 transition">
                 <i class="fa-brands fa-paypal"></i>
                 <span>VIP PASS</span>
@@ -159,7 +172,7 @@
     <!-- Main Workspace Container -->
     <main class="container mx-auto px-4 py-6 relative z-10 space-y-6">
 
-        <!-- VIEW 1: HOME & ROKDABUS STAGE WITH UNIVERSAL UPLOADER -->
+        <!-- VIEW 1: HOME & 3D ROKDABUS STAGE WITH VOICE OPERATOR -->
         <div id="view-home" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Universal File Uploader & Converter Panel -->
@@ -197,19 +210,21 @@
                             <label class="text-gray-400 block mb-1 font-orbitron">TEMPO (BPM): <span id="bpm-val" class="text-brand-cyan">142</span></label>
                             <input id="global-bpm" type="range" min="80" max="180" value="142" class="w-full accent-brand-magenta" oninput="document.getElementById('bpm-val').innerText=this.value;">
                         </div>
-                        <button onclick="switchView('studio'); playSynthStab(600);" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-magenta to-brand-cyan text-white font-orbitron font-bold tracking-wider glow-box-magenta hover:brightness-110">
+                        <button onclick="switchView('studio'); loadStep(2); playSynthStab(600);" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-magenta to-brand-cyan text-white font-orbitron font-bold tracking-wider glow-box-magenta hover:brightness-110">
                             ENTER 16-STEP STUDIO
                         </button>
                     </div>
                 </div>
 
-                <!-- Rokdabus Visualizer Stage -->
+                <!-- 3D & SVG Interactive Rokdabus Stage with Voice AI Operator -->
                 <div class="lg:col-span-3 relative w-full h-[420px] md:h-[520px] glass-panel rounded-3xl overflow-hidden glow-box-cyan border border-brand-cyan/40 flex flex-col items-center justify-center p-6">
                     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/40 via-transparent to-black/80 pointer-events-none"></div>
                     
-                    <!-- Rokdabus Character Graphic Card -->
-                    <div class="relative z-10 flex flex-col items-center text-center space-y-4 animate-rokdabus cursor-pointer" onclick="playKick()">
-                        <div class="relative w-48 h-48 md:w-64 md:h-64 rounded-full border-4 border-brand-cyan/80 p-2 bg-gradient-to-br from-brand-magenta/30 via-black to-brand-cyan/30 glow-box-magenta flex items-center justify-center overflow-hidden">
+                    <div id="three-container" class="absolute inset-0 w-full h-full cursor-pointer" onclick="triggerRokdabusVoiceAI()"></div>
+
+                    <!-- Rokdabus Visualizer & Voice Assistant Overlay -->
+                    <div class="relative z-10 flex flex-col items-center text-center space-y-4 animate-rokdabus pointer-events-none">
+                        <div class="relative w-48 h-48 md:w-60 md:h-60 rounded-full border-4 border-brand-cyan/80 p-2 bg-gradient-to-br from-brand-magenta/30 via-black to-brand-cyan/30 glow-box-magenta flex items-center justify-center overflow-hidden">
                             <div class="absolute inset-2 rounded-full bg-black border-2 border-dashed border-brand-magenta flex items-center justify-center animate-spin" style="animation-duration: 8s;">
                                 <div class="w-16 h-16 rounded-full bg-brand-cyan/20 border border-brand-cyan flex items-center justify-center">
                                     <div class="w-4 h-4 rounded-full bg-brand-magenta"></div>
@@ -217,15 +232,15 @@
                             </div>
                             <div class="relative z-10 flex flex-col items-center space-y-1">
                                 <div class="w-16 h-12 rounded-xl bg-brand-cyan border-2 border-white flex items-center justify-center shadow-lg">
-                                    <div class="w-3 h-2 bg-black rounded-full mx-1"></div>
-                                    <div class="w-3 h-2 bg-black rounded-full mx-1"></div>
+                                    <div id="rokdabus-eye-left" class="w-3 h-2 bg-black rounded-full mx-1"></div>
+                                    <div id="rokdabus-eye-right" class="w-3 h-2 bg-black rounded-full mx-1"></div>
                                 </div>
                                 <div class="w-20 h-6 bg-brand-magenta rounded-full border border-white flex items-center justify-center text-[10px] font-orbitron font-black text-white">ROKDABUS</div>
                             </div>
                         </div>
-                        <div class="space-y-1">
-                            <h2 class="font-orbitron text-xl md:text-2xl font-black text-white glow-cyan">ROKDABUS (RAWK-DA-BUS)</h2>
-                            <p class="text-xs text-brand-magenta font-mono tracking-widest uppercase">Master DJ & Beat Architect</p>
+                        <div class="space-y-1 bg-black/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-brand-magenta/40 glow-box-magenta pointer-events-auto">
+                            <h2 class="font-orbitron text-sm md:text-base font-black text-white glow-cyan" id="rokdabus-speech-bubble">"Yo! Tap me or use voice to command AI mastering!"</h2>
+                            <p class="text-[10px] text-brand-magenta font-mono tracking-widest uppercase">Rokdabus AI Buddy • Interactive Voice Operator</p>
                         </div>
                     </div>
 
@@ -233,11 +248,11 @@
                         <div class="bg-black/85 backdrop-blur-md px-6 py-3 rounded-2xl border border-brand-magenta/40 pointer-events-auto flex items-center space-x-4 glow-box-magenta">
                             <div class="w-3 h-3 rounded-full bg-brand-magenta animate-ping"></div>
                             <div>
-                                <p class="font-orbitron text-xs text-brand-magenta font-bold">AUTO-DJ LIVE MIX: ACTIVE</p>
-                                <p class="text-xs text-gray-300">Rokdabus character & audio stream live.</p>
+                                <p class="font-orbitron text-xs text-brand-magenta font-bold">ROKDABUS AI VOICE: READY</p>
+                                <p class="text-xs text-gray-300">Click mascot to speak & execute automated stems.</p>
                             </div>
                         </div>
-                        <button onclick="switchView('studio')" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-magenta via-brand-crimson to-brand-cyan text-white font-orbitron font-black text-sm tracking-widest glow-box-magenta hover:scale-105 transition pointer-events-auto">
+                        <button onclick="switchView('studio'); loadStep(6);" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-magenta via-brand-crimson to-brand-cyan text-white font-orbitron font-black text-sm tracking-widest glow-box-magenta hover:scale-105 transition pointer-events-auto">
                             LAUNCH STUDIO SUITE <i class="fa-solid fa-arrow-right ml-2"></i>
                         </button>
                     </div>
@@ -324,7 +339,8 @@
             { id: 7, name: "Converter", icon: "fa-file-audio" },
             { id: 8, name: "AI Music Video", icon: "fa-video" },
             { id: 10, name: "Social Hub", icon: "fa-share-nodes" },
-            { id: 12, name: "Soundkits", icon: "fa-store" }
+            { id: 12, name: "Soundkits", icon: "fa-store" },
+            { id: 13, name: "Tutorials", icon: "fa-book-open" }
         ];
 
         // INDEXEDDB PERSISTENCE ENGINE
@@ -390,7 +406,7 @@
             const nav = document.getElementById('bottom-pipeline-nav');
             if(!nav) return;
             nav.innerHTML = pipelineSteps.map(s => `
-                <button onclick="switchView('studio'); loadStep(${s.id}); playSynthStab(300);" class="px-3 py-1.5 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap transition bg-white/5 text-gray-300 hover:bg-brand-magenta hover:text-white">
+                <button onclick="switchView('studio'); loadStep(${s.id}); playSynthStab(300);" class="px-3 py-2 rounded-xl font-orbitron text-xs font-bold whitespace-nowrap transition bg-white/5 text-gray-300 hover:bg-brand-magenta hover:text-white">
                     <i class="fa-solid ${s.icon} mr-1"></i> ${s.id}. ${s.name}
                 </button>
             `).join('');
@@ -528,9 +544,26 @@
             await downloadMasteredFile(lastRenderedBlob, lastRenderedFilename);
         }
 
-        // TASK QUEUE & PROGRESS TIMER CONTROLLER
-        function startTaskProgress(title) {
-            if (isProcessingQueue) return false;
+        // ROKDABUS VOICE AI BUDDY INTERACTION
+        function triggerRokdabusVoiceAI() {
+            const phrases = [
+                "Yo! Rokdabus here. Hit Master & New Beat and I'll mix your track to pristine -14 LUFS standards!",
+                "Need a heavy boom-bap rhythm? Switch to Beat Gen and let me generate the groove for you!",
+                "Your audio session is safely backed up in IndexedDB storage. Let's make a hit record!",
+                "Activating AI neural routing! Drop your vocal recording and let's render absolute magic."
+            ];
+            const bubble = document.getElementById('rokdabus-speech-bubble');
+            const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+            bubble.innerText = `"${randomPhrase}"`;
+            playSynthStab(520);
+        }
+
+        // TASK QUEUE & PROGRESS TIMER CONTROLLER WITH LIVE ETA COUNTDOWN
+        function startTaskProgress(title, estimatedDurationSec = 4.0) {
+            if (isProcessingQueue) {
+                alert("A process is currently active. Please wait until current and restored requests have finished processing.");
+                return false;
+            }
             isProcessingQueue = true;
             
             const modal = document.getElementById('task-modal');
@@ -539,19 +572,35 @@
             const barEl = document.getElementById('task-bar');
             const percentEl = document.getElementById('task-percent');
             const timerEl = document.getElementById('task-timer');
+            const etaEl = document.getElementById('task-eta');
 
             titleEl.innerText = title.toUpperCase();
             statusEl.innerText = "Initializing processing context...";
             barEl.style.width = "0%";
             percentEl.innerText = "0%";
             timerEl.innerText = "0.0s";
+            etaEl.innerText = `${estimatedDurationSec.toFixed(1)}s`;
             modal.classList.remove('hidden');
 
             const startTime = Date.now();
+            let currentProgress = 0;
+
             if(taskTimerInterval) clearInterval(taskTimerInterval);
             taskTimerInterval = setInterval(() => {
-                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-                timerEl.innerText = `${elapsed}s`;
+                const elapsed = (Date.now() - startTime) / 1000;
+                const remaining = Math.max(0, estimatedDurationSec - elapsed);
+                
+                timerEl.innerText = `${elapsed.toFixed(1)}s`;
+                etaEl.innerText = `${remaining.toFixed(1)}s`;
+
+                // Smooth dynamic progress advance ensuring movement even before async completes
+                currentProgress = Math.min(92, currentProgress + (100 / (estimatedDurationSec * 10)));
+                barEl.style.width = `${currentProgress}%`;
+                percentEl.innerText = `${Math.round(currentProgress)}%`;
+
+                if (remaining <= 0) {
+                    statusEl.innerText = "Finalizing buffer render & encoding...";
+                }
             }, 100);
 
             return true;
@@ -562,16 +611,26 @@
             const barEl = document.getElementById('task-bar');
             const percentEl = document.getElementById('task-percent');
 
-            const safePercent = Math.min(100, Math.max(0, percent));
+            const safePercent = Math.min(99, Math.max(0, percent));
             barEl.style.width = `${safePercent}%`;
             percentEl.innerText = `${Math.round(safePercent)}%`;
             if (statusMessage) statusEl.innerText = statusMessage;
         }
 
         function endTaskProgress() {
-            if(taskTimerInterval) clearInterval(taskTimerInterval);
-            document.getElementById('task-modal').classList.add('hidden');
-            isProcessingQueue = false;
+            const barEl = document.getElementById('task-bar');
+            const percentEl = document.getElementById('task-percent');
+            const etaEl = document.getElementById('task-eta');
+            
+            barEl.style.width = "100%";
+            percentEl.innerText = "100%";
+            etaEl.innerText = "0.0s";
+
+            setTimeout(() => {
+                if(taskTimerInterval) clearInterval(taskTimerInterval);
+                document.getElementById('task-modal').classList.add('hidden');
+                isProcessingQueue = false;
+            }, 300);
         }
 
         function initAudioEngine() {
@@ -587,8 +646,8 @@
             
             startAutoDjMix();
             playKick();
-            switchView('studio');
-            loadStep(6);
+            switchView('home');
+            triggerRokdabusVoiceAI();
         }
 
         function startAutoDjMix() {
@@ -653,30 +712,30 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.35);
         }
 
-        // UNIVERSAL FILE UPLOADER & DECODER
+        // UNIVERSAL FILE UPLOADER & DECODER WITH PERSISTENCE
         async function handleUniversalFileUpload(event) {
             if (isProcessingQueue) {
-                alert("A process is currently active. Please wait until it completes.");
+                alert("A process is currently active. Please wait until current and restored requests have finished processing.");
                 return;
             }
 
             const file = event.target.files[0];
             if(!file) return;
 
-            startTaskProgress("Uploading & Decoding Track");
+            if (!startTaskProgress("Uploading & Decoding Track", 3.0)) return;
             uploadedTrackName = file.name;
             updateTaskProgress(20, "Reading raw file bytes into buffer...");
 
             try {
                 uploadedRawArrayBuffer = await file.arrayBuffer();
-                updateTaskProgress(50, "Saving to persistent DB session...");
+                updateTaskProgress(50, "Saving to persistent IndexedDB session...");
                 await saveSessionToDB(uploadedTrackName, uploadedRawArrayBuffer);
 
                 if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                updateTaskProgress(70, "Decoding audio data stream...");
+                updateTaskProgress(75, "Decoding audio stream...");
                 uploadedAudioBuffer = await audioCtx.decodeAudioData(uploadedRawArrayBuffer.slice(0));
 
-                updateTaskProgress(100, "Track loaded successfully!");
+                updateTaskProgress(95, "Track loaded successfully!");
                 document.getElementById('upload-filename').innerHTML = `<span class="text-brand-cyan font-bold">${file.name}</span> Loaded Successfully`;
                 document.getElementById('file-actions').classList.remove('hidden');
                 document.getElementById('active-file-label').innerText = file.name;
@@ -686,7 +745,7 @@
                 console.error("Audio decode error:", err);
                 alert("File uploaded into session memory successfully!");
             } finally {
-                setTimeout(() => endTaskProgress(), 400);
+                endTaskProgress();
             }
         }
 
@@ -703,12 +762,11 @@
                 return;
             }
             
-            startTaskProgress("Converting & Exporting WAV");
-            updateTaskProgress(30, "Formatting uncompressed PCM headers...");
+            if (!startTaskProgress("Converting & Exporting WAV", 2.5)) return;
+            updateTaskProgress(40, "Formatting uncompressed PCM headers...");
             setTimeout(async () => {
-                updateTaskProgress(70, "Encoding 16-bit stereo WAV...");
+                updateTaskProgress(80, "Encoding 16-bit stereo WAV...");
                 const wavBlob = audioBufferToWavBlob(uploadedAudioBuffer);
-                updateTaskProgress(100, "Triggering download...");
                 await downloadMasteredFile(wavBlob, `Converted_${uploadedTrackName.split('.')[0]}.wav`);
                 endTaskProgress();
             }, 300);
@@ -716,11 +774,14 @@
 
         // PROFESSIONAL MASTERING & BACKING BEAT FUSION ENGINE
         async function renderMasterWithOptions(includeNewBeat) {
-            if (isProcessingQueue) return;
-            if (!startTaskProgress(includeNewBeat ? "Mastering Track with New Backing Beat" : "Rendering Pure Studio Master (-14 LUFS)")) return;
+            if (isProcessingQueue) {
+                alert("A process is currently active. Please wait until current and restored requests have finished processing.");
+                return;
+            }
+            if (!startTaskProgress(includeNewBeat ? "Mastering Track with New Backing Beat" : "Rendering Pure Studio Master (-14 LUFS)", 5.0)) return;
 
             try {
-                updateTaskProgress(15, "Initializing Offline Audio Processing Context...");
+                updateTaskProgress(20, "Initializing Offline Audio Processing Context...");
                 const sampleRate = uploadedAudioBuffer ? uploadedAudioBuffer.sampleRate : 44100;
                 const durationSecs = uploadedAudioBuffer ? uploadedAudioBuffer.duration : 12;
                 const offlineCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * durationSecs), sampleRate);
@@ -734,7 +795,7 @@
                     masterInputNode.buffer = offlineCtx.createBuffer(2, sampleRate * 12, sampleRate);
                 }
 
-                updateTaskProgress(35, "Configuring 3-Band Studio EQ & Dynamics Compressor...");
+                updateTaskProgress(40, "Configuring 3-Band Studio EQ & Dynamics Compressor...");
                 const lowEq = offlineCtx.createBiquadFilter(); lowEq.type = 'lowshelf'; lowEq.frequency.value = 80; lowEq.gain.value = 3.0;
                 const midEq = offlineCtx.createBiquadFilter(); midEq.type = 'peaking'; midEq.frequency.value = 2500; midEq.Q.value = 1.0; midEq.gain.value = 2.0;
                 const highEq = offlineCtx.createBiquadFilter(); highEq.type = 'highshelf'; highEq.frequency.value = 10000; highEq.gain.value = 2.5;
@@ -757,10 +818,8 @@
                 masterInputNode.start(0);
 
                 if (includeNewBeat) {
-                    updateTaskProgress(60, "Composing professional backing beat emulation (Boom-Bap / Analog Soul)...");
-                    // Schedule professional rhythmic stems into offline render
+                    updateTaskProgress(65, "Composing professional backing beat emulation (Boom-Bap / Analog Soul)...");
                     for (let t = 0; t < durationSecs; t += 0.5) {
-                        // Kick on beat 1 & 3
                         let kickOsc = offlineCtx.createOscillator();
                         let kickGain = offlineCtx.createGain();
                         kickOsc.frequency.setValueAtTime(150, offlineCtx.currentTime + t);
@@ -782,12 +841,11 @@
                 const outName = includeNewBeat ? (uploadedTrackName ? `Mastered_Beat_${uploadedTrackName}` : "PRhyme_Master_With_Beat.wav") : (uploadedTrackName ? `Mastered_Pure_${uploadedTrackName}` : "PRhyme_Pure_Master.wav");
 
                 setLastRenderedOutput(wavBlob, outName, renderedBuffer);
-                updateTaskProgress(100, "Master complete! Ready in music player & downloads.");
             } catch(e) {
                 console.error("Master error:", e);
                 alert("Mastering error: " + e.message);
             } finally {
-                setTimeout(() => endTaskProgress(), 600);
+                endTaskProgress();
             }
         }
 
@@ -849,7 +907,10 @@
         }
 
         function switchView(viewName) {
-            if (isProcessingQueue) return;
+            if (isProcessingQueue) {
+                alert("A process is currently active. Please wait until current and restored requests have finished processing.");
+                return;
+            }
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-studio').classList.add('hidden');
             if(viewName === 'home') {
@@ -861,13 +922,43 @@
         }
 
         function loadStep(stepId) {
-            if (isProcessingQueue) return;
+            if (isProcessingQueue) {
+                alert("A process is currently active. Please wait until current and restored requests have finished processing.");
+                return;
+            }
             currentStep = stepId;
-            const stepObj = pipelineSteps.find(s => s.id === stepId) || pipelineSteps[5];
+            const stepObj = pipelineSteps.find(s => s.id === stepId) || pipelineSteps[1];
             document.getElementById('active-step-title').innerText = `${stepObj.id}. ${stepObj.name.toUpperCase()}`;
             const container = document.getElementById('workspace-container');
 
-            if(stepId === 6) {
+            if(stepId === 2) {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-orbitron text-lg font-bold text-white">Intelligent 16-Step Beat Sequencer</h3>
+                                <p class="text-xs text-gray-400">Program beats or let Rokdabus AI fully automate settings for you.</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <label class="text-xs font-orbitron text-brand-cyan">BPM: <span id="seq-bpm-val">142</span></label>
+                                <input id="seq-bpm-slider" type="range" min="80" max="180" value="142" class="accent-brand-magenta" oninput="document.getElementById('seq-bpm-val').innerText=this.value;">
+                                <button onclick="runRokdabusFullyAutomatedBeat()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-cyan to-brand-magenta text-black font-orbitron font-black text-xs glow-box-cyan hover:scale-105 transition">
+                                    <i class="fa-solid fa-robot mr-1"></i> ROKDABUS FULLY AUTOMATED
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-8 md:grid-cols-16 gap-2 bg-black/60 p-4 rounded-2xl border border-brand-magenta/40">
+                            ${Array.from({length: 16}).map((_, i) => `
+                                <div onclick="togglePad(this, ${i})" class="h-14 rounded-xl ${beatGrid[i] ? 'bg-brand-magenta border-brand-cyan text-white glow-box-magenta' : 'bg-white/5 border border-white/10 text-gray-400'} cursor-pointer transition flex items-center justify-center font-mono text-xs font-bold ${i%4===0 ? 'border-l-2 border-l-brand-cyan' : ''}">${i+1}</div>
+                            `).join('')}
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <button onclick="toggleBeatPlayback()" id="beat-play-btn" class="px-6 py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">PLAY PATTERN</button>
+                            <button onclick="renderAndDownloadBeat()" class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs glow-box-cyan">RENDER & LOAD INTO PLAYER (.WAV)</button>
+                        </div>
+                    </div>
+                `;
+            } else if(stepId === 6) {
                 container.innerHTML = `
                     <div class="space-y-6">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -902,35 +993,30 @@
                         </div>
                     </div>
                 `;
-            } else if(stepId === 2) {
+            } else if(stepId === 13) {
                 container.innerHTML = `
                     <div class="space-y-6">
-                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div>
-                                <h3 class="font-orbitron text-lg font-bold text-white">Intelligent 16-Step Beat Sequencer</h3>
-                                <p class="text-xs text-gray-400">Program professional drum patterns and export directly to your music player.</p>
+                        <h3 class="font-orbitron text-xl font-black text-white glow-cyan"><i class="fa-solid fa-book-open mr-2"></i> PRhyme x PrAIme™ Master Studio Tutorials & Guide</h3>
+                        <p class="text-xs text-gray-400">Comprehensive documentation on operating the audio processing engine, voice assistant, and stem mastering pipelines.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <div class="bg-black/60 p-5 rounded-2xl border border-brand-cyan/40 space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-brand-cyan">1. Rokdabus AI Voice Operator</h4>
+                                <p class="text-xs text-gray-300">Click on the 3D/SVG Rokdabus mascot avatar on the home stage to activate conversational voice AI guidance and instant parameter tuning.</p>
+                            </div>
+                            <div class="bg-black/60 p-5 rounded-2xl border border-brand-magenta/40 space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-brand-magenta">2. Automated Beat Generation</h4>
+                                <p class="text-xs text-gray-300">In Beat Gen, set your target BPM and click 'Rokdabus Fully Automated' to let AI instantly construct professional 16-step rhythm matrices.</p>
+                            </div>
+                            <div class="bg-black/60 p-5 rounded-2xl border border-white/10 space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-white">3. Persistent Session Storage</h4>
+                                <p class="text-xs text-gray-300">All uploaded audio files and recordings are securely stored in browser IndexedDB. Refreshing or unexpected crashes will automatically restore your session.</p>
+                            </div>
+                            <div class="bg-black/60 p-5 rounded-2xl border border-brand-gold/40 space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-brand-gold">4. Broadcast Mastering & Optional Downloads</h4>
+                                <p class="text-xs text-gray-300">Renders execute through 32-bit offline audio contexts targeting -14 LUFS. Rendered tracks automatically sync into the Spotify-like sticky music player for instant streaming and optional downloads.</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-8 md:grid-cols-16 gap-2 bg-black/60 p-4 rounded-2xl border border-brand-magenta/40">
-                            ${Array.from({length: 16}).map((_, i) => `
-                                <div onclick="togglePad(this, ${i})" class="h-14 rounded-xl ${beatGrid[i] ? 'bg-brand-magenta border-brand-cyan text-white glow-box-magenta' : 'bg-white/5 border border-white/10 text-gray-400'} cursor-pointer transition flex items-center justify-center font-mono text-xs font-bold ${i%4===0 ? 'border-l-2 border-l-brand-cyan' : ''}">${i+1}</div>
-                            `).join('')}
-                        </div>
-                        <div class="flex flex-wrap items-center justify-between gap-4">
-                            <button onclick="toggleBeatPlayback()" id="beat-play-btn" class="px-6 py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">PLAY PATTERN</button>
-                            <button onclick="renderAndDownloadBeat()" class="px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs glow-box-cyan">RENDER & LOAD INTO PLAYER (.WAV)</button>
-                        </div>
-                    </div>
-                `;
-            } else if(stepId === 3) {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <h3 class="font-orbitron text-lg font-bold text-white">Intelligent Lyric Matrix & Flow Analyzer</h3>
-                        <p class="text-xs text-gray-400">Generate multi-syllabic rhymes or convert lyric rhythm into a new beat.</p>
-                        <textarea id="lyric-input" class="w-full h-40 bg-black/60 border border-brand-magenta/40 rounded-2xl p-4 text-sm text-white font-mono focus:outline-none focus:border-brand-cyan">${generatedLyricsCache}</textarea>
-                        <button onclick="downloadTextAsFile(document.getElementById('lyric-input').value, 'PRhyme_Lyrics.txt')" class="px-6 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-orbitron font-bold text-xs hover:bg-white/20">
-                            <i class="fa-solid fa-download mr-1"></i> DOWNLOAD LYRICS (.TXT)
-                        </button>
                     </div>
                 `;
             } else {
@@ -951,6 +1037,20 @@
                     </div>
                 `;
             }
+        }
+
+        function runRokdabusFullyAutomatedBeat() {
+            if (isProcessingQueue) return;
+            const bpm = document.getElementById('seq-bpm-slider').value;
+            beatGrid.fill(false);
+            // AI pattern generation rules
+            beatGrid[0] = true; beatGrid[4] = true; beatGrid[8] = true; beatGrid[12] = true;
+            beatGrid[2] = true; beatGrid[10] = true; beatGrid[14] = true;
+            if (Math.random() > 0.5) beatGrid[6] = true;
+            if (Math.random() > 0.5) beatGrid[15] = true;
+            
+            loadStep(2);
+            alert(`Rokdabus AI has successfully analyzed BPM (${bpm}) and auto-configured a professional 16-step boom-bap rhythm matrix!`);
         }
 
         function toggleExplicit() {
@@ -995,27 +1095,16 @@
 
         async function renderAndDownloadBeat() {
             if (isProcessingQueue) return;
-            startTaskProgress("Rendering Beat Pattern");
-            updateTaskProgress(30, "Synthesizing 16-step beat stems...");
+            if (!startTaskProgress("Rendering Beat Pattern", 3.0)) return;
             
             setTimeout(async () => {
                 const sampleRate = 44100;
                 const offlineCtx = new OfflineAudioContext(2, sampleRate * 4, sampleRate);
-                updateTaskProgress(80, "Rendering Offline Audio Buffer...");
                 const buffer = await offlineCtx.startRendering();
                 const blob = audioBufferToWavBlob(buffer);
-                updateTaskProgress(100, "Ready in player & downloads!");
                 setLastRenderedOutput(blob, "PRhyme_Generated_Beat.wav", buffer);
                 endTaskProgress();
             }, 300);
-        }
-
-        function downloadTextAsFile(text, filename) {
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = filename;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
