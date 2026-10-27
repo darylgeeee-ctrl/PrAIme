@@ -120,10 +120,10 @@
         </div>
         <div class="space-y-2 max-w-lg z-10">
             <h1 class="font-orbitron text-2xl md:text-4xl font-black text-white glow-cyan">PRAIME™ PRODUCTIONS</h1>
-            <p class="text-xs md:text-sm text-gray-400">Ultimate Production Studio and Mastering Suite+ active.</p>
+            <p class="text-xs md:text-sm text-gray-400">Ultimate Production Studio and Mastering Suite+ active. Underground Rave Mixes ready.</p>
         </div>
         <button onclick="initAudioEngine()" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-cyan via-brand-magenta to-brand-crimson text-white font-orbitron font-black text-xs md:text-sm tracking-widest glow-box-magenta hover:scale-105 transition z-10">
-            ACTIVATE STUDIO ENGINE <i class="fa-solid fa-bolt ml-2"></i>
+            LAUNCH STUDIO & RAVE DJ <i class="fa-solid fa-bolt ml-2"></i>
         </button>
     </div>
 
@@ -197,15 +197,15 @@
                 <i class="fa-solid fa-music text-white text-sm"></i>
             </div>
             <div class="truncate">
-                <p id="player-track-name" class="font-orbitron text-xs text-white font-bold truncate">No Track Loaded</p>
-                <p id="player-track-status" class="text-[10px] text-brand-cyan font-mono">Ready to Play</p>
+                <p id="player-track-name" class="font-orbitron text-xs text-white font-bold truncate">Underground Rave Mix #1 Active</p>
+                <p id="player-track-status" class="text-[10px] text-brand-cyan font-mono">Live DJ Streaming</p>
             </div>
         </div>
 
         <div class="flex flex-col items-center space-y-1 w-1/2 max-w-md">
             <div class="flex items-center space-x-4">
                 <button onclick="seekPlayer(-5)" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-backward-step"></i></button>
-                <button id="player-play-btn" onclick="togglePlayerPlayback()" class="w-9 h-9 rounded-full bg-brand-magenta text-white flex items-center justify-center glow-box-magenta hover:scale-105 transition"><i class="fa-solid fa-play text-xs"></i></button>
+                <button id="player-play-btn" onclick="togglePlayerPlayback()" class="w-9 h-9 rounded-full bg-brand-magenta text-white flex items-center justify-center glow-box-magenta hover:scale-105 transition"><i class="fa-solid fa-pause text-xs"></i></button>
                 <button onclick="seekPlayer(5)" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-forward-step"></i></button>
             </div>
             <div class="w-full flex items-center space-x-2">
@@ -214,7 +214,7 @@
                     <canvas id="player-waveform-canvas" class="absolute inset-0 w-full h-full"></canvas>
                     <input id="player-seek-slider" type="range" min="0" max="100" value="0" class="absolute inset-0 w-full opacity-0 cursor-pointer" oninput="onPlayerSeek(this.value)">
                 </div>
-                <span id="player-total-time" class="text-[10px] font-mono text-gray-400">0:00</span>
+                <span id="player-total-time" class="text-[10px] font-mono text-gray-400">LIVE</span>
             </div>
         </div>
 
@@ -292,17 +292,17 @@
                             <div class="absolute bottom-2 z-20 bg-brand-magenta px-3 py-0.5 rounded-full border border-white text-[9px] font-orbitron font-black text-white">ROKDABUS</div>
                         </div>
                         <div class="space-y-1 bg-black/85 backdrop-blur-md px-6 py-3 rounded-2xl border border-brand-magenta/40 glow-box-magenta pointer-events-auto max-w-lg">
-                            <h2 class="font-orbitron text-xs md:text-sm font-black text-white glow-cyan" id="rokdabus-speech-bubble">"Welcome to PrAIme Productions! Ultimate Production Studio and Mastering Suite+ active."</h2>
-                            <p class="text-[9px] text-brand-magenta font-mono tracking-widest uppercase">PrAIme™ AI Expert • Standing By</p>
+                            <h2 class="font-orbitron text-xs md:text-sm font-black text-white glow-cyan" id="rokdabus-speech-bubble">"Welcome to PrAIme™ Productions! Default underground rave mix is streaming on initialization."</h2>
+                            <p class="text-[9px] text-brand-magenta font-mono tracking-widest uppercase">PrAIme™ AI Expert • Live Rave DJ Active</p>
                         </div>
                     </div>
 
                     <div class="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-none z-20">
                         <div class="bg-black/85 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-brand-magenta/40 pointer-events-auto flex items-center space-x-3 glow-box-magenta">
-                            <button id="live-mix-toggle-btn" onclick="toggleLiveMix()" class="px-3 py-1.5 rounded-xl bg-brand-magenta text-white font-orbitron text-[10px] font-bold glow-box-magenta hover:scale-105 transition" onmouseenter="showRokdabusGuidance('livemix', 'Live DJ mix generates continuous background audio preview.')">
-                                <i class="fa-solid fa-sliders mr-1"></i> LIVE DJ MIX: OFF
+                            <button id="live-mix-toggle-btn" onclick="toggleLiveMix()" class="px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron text-[10px] font-bold glow-box-cyan hover:scale-105 transition" onmouseenter="showRokdabusGuidance('livemix', 'Underground Rave Mixes play automatically on startup. Click to toggle.')">
+                                <i class="fa-solid fa-sliders mr-1"></i> RAVE MIX: ACTIVE
                             </button>
-                            <span class="text-[11px] text-gray-300 font-mono">Optional Background DJ Loop</span>
+                            <span class="text-[11px] text-gray-300 font-mono">Underground Acid & Techno Loop</span>
                         </div>
                         <button onclick="switchView('studio'); loadStep(16);" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-magenta via-brand-crimson to-brand-cyan text-white font-orbitron font-black text-sm tracking-widest glow-box-magenta hover:scale-105 transition pointer-events-auto">
                             OPEN LIVE MIXTABLES <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -378,6 +378,7 @@
         let isLiveMixActive = false;
         let liveMixInterval = null;
         let waveformAnimFrame = null;
+        let currentRaveMixIndex = 0;
 
         let isProcessingQueue = false;
         let taskTimerInterval = null;
@@ -386,7 +387,7 @@
             masterLufs: -14,
             bufferSize: 512,
             aiAutopilot: true,
-            liveDjEnabled: false,
+            liveDjEnabled: true,
             themeMode: 'cyber'
         };
 
@@ -439,7 +440,7 @@
 
             const djBtn = document.getElementById('live-mix-toggle-btn');
             if (djBtn) {
-                djBtn.innerHTML = '<i class="fa-solid fa-sliders mr-1"></i> LIVE DJ MIX: OFF';
+                djBtn.innerHTML = '<i class="fa-solid fa-sliders mr-1"></i> RAVE MIX: OFF';
                 djBtn.className = "px-3 py-1.5 rounded-xl bg-brand-magenta text-white font-orbitron text-[10px] font-bold glow-box-magenta hover:scale-105 transition";
             }
         }
@@ -560,13 +561,13 @@
                 ctx.fillStyle = '#08080c';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                if (isPlayerPlaying) {
+                if (isLiveMixActive || isPlayerPlaying) {
                     ctx.strokeStyle = '#00f0ff';
                     ctx.lineWidth = 1.8;
                     ctx.beginPath();
                     ctx.moveTo(0, canvas.height / 2);
                     for(let x=0; x<canvas.width; x+=3) {
-                        const y = (canvas.height / 2) + (Math.sin(x * 0.08 + Date.now() * 0.015) * (Math.random() * 7 + 3));
+                        const y = (canvas.height / 2) + (Math.sin(x * 0.1 + Date.now() * 0.02) * (Math.random() * 9 + 4));
                         ctx.lineTo(x, y);
                     }
                     ctx.stroke();
@@ -596,7 +597,7 @@
 
         function togglePlayerPlayback() {
             if (!activePlayerBuffer) {
-                alert("Please upload or render a track first!");
+                alert("Live Rave DJ is currently active. Upload or render a custom track to interrupt playback.");
                 return;
             }
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -684,17 +685,95 @@
                 stopAllActiveAudio();
             } else {
                 stopAllActiveAudio();
-                isLiveMixActive = true;
-                const btn = document.getElementById('live-mix-toggle-btn');
-                btn.innerHTML = '<i class="fa-solid fa-sliders mr-1 text-brand-cyan"></i> LIVE DJ MIX: ACTIVE';
-                btn.className = "px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron text-[10px] font-bold glow-box-cyan hover:scale-105 transition";
-                liveMixInterval = setInterval(() => {
-                    if (!isLiveMixActive || !audioCtx) return;
-                    playKick();
-                    setTimeout(() => playHiHat(), 250);
-                    setTimeout(() => playSnare(), 500);
-                }, 1800);
+                startUndergroundRaveMix();
             }
+        }
+
+        function startUndergroundRaveMix() {
+            isLiveMixActive = true;
+            currentRaveMixIndex = (currentRaveMixIndex + 1) % 2;
+            const mixName = currentRaveMixIndex === 0 ? "Underground Acid Rave Mix #1 (142 BPM)" : "Detroit Hard Techno Mix #2 (148 BPM)";
+            
+            document.getElementById('player-track-name').innerText = mixName;
+            document.getElementById('player-track-status').innerText = "Live Rave Streaming";
+            document.getElementById('player-total-time').innerText = "LIVE";
+
+            const btn = document.getElementById('live-mix-toggle-btn');
+            btn.innerHTML = '<i class="fa-solid fa-sliders mr-1 text-brand-cyan"></i> RAVE MIX: ACTIVE';
+            btn.className = "px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron text-[10px] font-bold glow-box-cyan hover:scale-105 transition";
+
+            let beatStep = 0;
+            liveMixInterval = setInterval(() => {
+                if (!isLiveMixActive || !audioCtx) return;
+                playRaveKick();
+                if (beatStep % 2 === 1) playRaveHiHat();
+                if (beatStep % 4 === 2) playRaveSnare();
+                if (beatStep % 8 === 0 || beatStep % 8 === 6) playAcidSynthStab(beatStep);
+                beatStep = (beatStep + 1) % 16;
+            }, 140); // Fast 140+ BPM Underground Rave Tempo
+        }
+
+        function playRaveKick() {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.9, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playRaveSnare() {
+            if(!audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 0.1;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = (Math.random() * 2 - 1); }
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = 1500; filter.Q.value = 3;
+            const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        function playRaveHiHat() {
+            if(!audioCtx) return;
+            const bufferSize = audioCtx.sampleRate * 0.04;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 7000;
+            const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            noise.start();
+        }
+
+        function playAcidSynthStab(step) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            const notes = [110, 130.81, 164.81, 220, 246.94];
+            osc.frequency.setValueAtTime(notes[step % notes.length], audioCtx.currentTime);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(300, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(2400, audioCtx.currentTime + 0.12);
+            filter.Q.setValueAtTime(12, audioCtx.currentTime); // High resonance acid squelch
+
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+
+            osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.18);
         }
 
         function startTaskProgress(title, estimatedDurationSec = 4.0) {
@@ -791,47 +870,10 @@
             } catch(e) {}
 
             try { initVisualizerBars(); } catch(e) {}
+            
+            // Automatically play default underground rave mix on initialization for first-time users
+            startUndergroundRaveMix();
             switchView('home');
-        }
-
-        function playKick() {
-            if(!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(160, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.18);
-            gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.18);
-        }
-
-        function playSnare() {
-            if(!audioCtx) return;
-            const bufferSize = audioCtx.sampleRate * 0.12;
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
-            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-            const filter = audioCtx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 1200;
-            const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
-            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-            noise.start();
-        }
-
-        function playHiHat() {
-            if(!audioCtx) return;
-            const bufferSize = audioCtx.sampleRate * 0.05;
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
-            const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-            const filter = audioCtx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.value = 6000;
-            const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-            noise.start();
         }
 
         async function handleUniversalFileUpload(event) {
@@ -1242,9 +1284,9 @@
                 let step = 0;
                 beatIntervalId = setInterval(() => {
                     if(beatGrid[step]) {
-                        if(step % 4 === 0) playKick();
-                        else if(step % 4 === 2) playSnare();
-                        else playHiHat();
+                        if(step % 4 === 0) playRaveKick();
+                        else if(step % 4 === 2) playRaveSnare();
+                        else playRaveHiHat();
                     }
                     step = (step + 1) % 16;
                 }, 175);
@@ -1256,9 +1298,9 @@
             beatGrid[index] = !beatGrid[index];
             loadStep(2);
             if(beatGrid[index]) {
-                if(index % 4 === 0) playKick();
-                else if(index % 4 === 2) playSnare();
-                else playHiHat();
+                if(index % 4 === 0) playRaveKick();
+                else if(index % 4 === 2) playRaveSnare();
+                else playRaveHiHat();
             }
         }
 
