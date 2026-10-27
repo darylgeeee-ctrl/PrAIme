@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PrAImes™ Productions – Ultimate Mastering Studio Suite (#1 DAW Platform)</title>
+    <title>PrAIme™ Productions – Ultimate Production Studio and Mastering Suite+</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -26,10 +26,10 @@
     </script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- PWA Manifest for Standalone APK / iOS App Wrapping -->
+    <!-- PWA Manifest for Standalone Application -->
     <link rel="manifest" href="data:application/manifest+json,{
-        'name': 'PrAImes Master Studio Suite',
-        'short_name': 'PrAImes',
+        'name': 'PrAIme Production Studio',
+        'short_name': 'PrAIme',
         'start_url': '.',
         'display': 'standalone',
         'background_color': '#030305',
@@ -93,7 +93,7 @@
             </div>
         </div>
         <div class="space-y-2 max-w-lg z-10">
-            <h1 class="font-orbitron text-xl md:text-3xl font-black text-white glow-cyan">PRAIMES™ PRODUCTIONS INITIALIZATION</h1>
+            <h1 class="font-orbitron text-xl md:text-3xl font-black text-white glow-cyan">PRAIME PRODUCTIONS INITIALIZATION</h1>
             <p class="text-xs md:text-sm text-gray-400">Grant microphone and file storage permissions to enable offline PWA caching, multi-track stems, and zero-latency DAW mastering.</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 z-10 w-full max-w-sm">
@@ -119,15 +119,15 @@
             </div>
         </div>
         <div class="space-y-2 max-w-lg z-10">
-            <h1 class="font-orbitron text-2xl md:text-4xl font-black text-white glow-cyan">PRAIMES™ ULTIMATE MASTER SUITE</h1>
-            <p class="text-xs md:text-sm text-gray-400">Offline PWA standalone engine active. Tap below to launch studio & Live DJ.</p>
+            <h1 class="font-orbitron text-2xl md:text-4xl font-black text-white glow-cyan">PRAIME™ PRODUCTIONS</h1>
+            <p class="text-xs md:text-sm text-gray-400">Ultimate Production Studio and Mastering Suite+ active.</p>
         </div>
         <button onclick="initAudioEngine()" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-cyan via-brand-magenta to-brand-crimson text-white font-orbitron font-black text-xs md:text-sm tracking-widest glow-box-magenta hover:scale-105 transition z-10">
-            ACTIVATE AUDIO ENGINE & LIVE DJ <i class="fa-solid fa-bolt ml-2"></i>
+            ACTIVATE STUDIO ENGINE <i class="fa-solid fa-bolt ml-2"></i>
         </button>
     </div>
 
-    <!-- Task Modal with Flashing "PrAiming..." and Completion "PrAImed!" -->
+    <!-- Task Modal -->
     <div id="task-modal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center space-y-6">
         <div class="w-20 h-20 rounded-2xl bg-brand-card border-2 border-brand-cyan flex items-center justify-center glow-box-cyan animate-pulse">
             <i id="task-icon" class="fa-solid fa-compact-disc text-brand-cyan text-3xl animate-spin"></i>
@@ -157,8 +157,8 @@
                 <i class="fa-solid fa-compact-disc text-white animate-spin text-sm"></i>
             </div>
             <div>
-                <span class="font-orbitron font-black text-base md:text-lg tracking-wider text-white">PRAIMES™</span>
-                <span class="text-[9px] block text-brand-cyan font-mono tracking-widest">ULTIMATE MASTER SUITE</span>
+                <span class="font-orbitron font-black text-base md:text-lg tracking-wider text-white">PRAIME™</span>
+                <span class="text-[9px] block text-brand-cyan font-mono tracking-widest">PRODUCTIONS SUITE+</span>
             </div>
         </div>
 
@@ -197,15 +197,15 @@
                 <i class="fa-solid fa-music text-white text-sm"></i>
             </div>
             <div class="truncate">
-                <p id="player-track-name" class="font-orbitron text-xs text-white font-bold truncate">Live DJ Stream Active</p>
-                <p id="player-track-status" class="text-[10px] text-brand-cyan font-mono">Synchronized Output Stream</p>
+                <p id="player-track-name" class="font-orbitron text-xs text-white font-bold truncate">No Track Loaded</p>
+                <p id="player-track-status" class="text-[10px] text-brand-cyan font-mono">Ready to Play</p>
             </div>
         </div>
 
         <div class="flex flex-col items-center space-y-1 w-1/2 max-w-md">
             <div class="flex items-center space-x-4">
                 <button onclick="seekPlayer(-5)" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-backward-step"></i></button>
-                <button id="player-play-btn" onclick="togglePlayerPlayback()" class="w-9 h-9 rounded-full bg-brand-magenta text-white flex items-center justify-center glow-box-magenta hover:scale-105 transition"><i class="fa-solid fa-pause text-xs"></i></button>
+                <button id="player-play-btn" onclick="togglePlayerPlayback()" class="w-9 h-9 rounded-full bg-brand-magenta text-white flex items-center justify-center glow-box-magenta hover:scale-105 transition"><i class="fa-solid fa-play text-xs"></i></button>
                 <button onclick="seekPlayer(5)" class="text-gray-400 hover:text-white text-xs"><i class="fa-solid fa-forward-step"></i></button>
             </div>
             <div class="w-full flex items-center space-x-2">
@@ -214,7 +214,7 @@
                     <canvas id="player-waveform-canvas" class="absolute inset-0 w-full h-full"></canvas>
                     <input id="player-seek-slider" type="range" min="0" max="100" value="0" class="absolute inset-0 w-full opacity-0 cursor-pointer" oninput="onPlayerSeek(this.value)">
                 </div>
-                <span id="player-total-time" class="text-[10px] font-mono text-gray-400">--:--</span>
+                <span id="player-total-time" class="text-[10px] font-mono text-gray-400">0:00</span>
             </div>
         </div>
 
@@ -276,12 +276,11 @@
                     </div>
                 </div>
 
-                <!-- Rokdabus AI Visual Representation & Live DJ Mix Stage -->
+                <!-- Rokdabus AI Visual Representation Stage -->
                 <div class="lg:col-span-3 relative w-full h-[420px] md:h-[520px] glass-panel rounded-3xl overflow-hidden glow-box-cyan border border-brand-cyan/40 flex flex-col items-center justify-center p-6">
                     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/40 via-transparent to-black/80 pointer-events-none"></div>
 
                     <div class="relative z-10 flex flex-col items-center text-center space-y-4 animate-rokdabus pointer-events-none">
-                        <!-- Upgraded Avatar matching template: Vinyl Head character with glasses & headphones -->
                         <div class="relative w-48 h-48 md:w-60 md:h-60 rounded-full border-4 border-brand-cyan/80 p-3 bg-gradient-to-br from-brand-magenta/30 via-black to-brand-cyan/30 glow-box-magenta flex items-center justify-center overflow-hidden">
                             <div class="absolute inset-2 rounded-full bg-black border-2 border-dashed border-brand-magenta flex items-center justify-center">
                                 <div class="w-24 h-16 rounded-xl bg-brand-dark border-2 border-brand-cyan flex items-center justify-center shadow-2xl relative">
@@ -293,20 +292,20 @@
                             <div class="absolute bottom-2 z-20 bg-brand-magenta px-3 py-0.5 rounded-full border border-white text-[9px] font-orbitron font-black text-white">ROKDABUS</div>
                         </div>
                         <div class="space-y-1 bg-black/85 backdrop-blur-md px-6 py-3 rounded-2xl border border-brand-magenta/40 glow-box-magenta pointer-events-auto max-w-lg">
-                            <h2 class="font-orbitron text-xs md:text-sm font-black text-white glow-cyan" id="rokdabus-speech-bubble">"Yo! Live DJ mix is active. I am actively mixing stems while you stream a single master waveform!"</h2>
-                            <p class="text-[9px] text-brand-magenta font-mono tracking-widest uppercase">PrAImes™ AI Expert • Live DJ & Mixtables Active</p>
+                            <h2 class="font-orbitron text-xs md:text-sm font-black text-white glow-cyan" id="rokdabus-speech-bubble">"Welcome to PrAIme Productions! Ultimate Production Studio and Mastering Suite+ active."</h2>
+                            <p class="text-[9px] text-brand-magenta font-mono tracking-widest uppercase">PrAIme™ AI Expert • Standing By</p>
                         </div>
                     </div>
 
                     <div class="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-none z-20">
                         <div class="bg-black/85 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-brand-magenta/40 pointer-events-auto flex items-center space-x-3 glow-box-magenta">
-                            <button id="live-mix-toggle-btn" onclick="toggleLiveMix()" class="px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron text-[10px] font-bold glow-box-cyan hover:scale-105 transition" onmouseenter="showRokdabusGuidance('livemix', 'Live DJ mix generates continuous streaming output and updates the user waveform in sync.')">
-                                <i class="fa-solid fa-sliders mr-1"></i> LIVE DJ MIX: ACTIVE (INDEFINITE)
+                            <button id="live-mix-toggle-btn" onclick="toggleLiveMix()" class="px-3 py-1.5 rounded-xl bg-brand-magenta text-white font-orbitron text-[10px] font-bold glow-box-magenta hover:scale-105 transition" onmouseenter="showRokdabusGuidance('livemix', 'Live DJ mix generates continuous background audio preview.')">
+                                <i class="fa-solid fa-sliders mr-1"></i> LIVE DJ MIX: OFF
                             </button>
-                            <span class="text-[11px] text-gray-300 font-mono">Single track synced stream</span>
+                            <span class="text-[11px] text-gray-300 font-mono">Optional Background DJ Loop</span>
                         </div>
                         <button onclick="switchView('studio'); loadStep(16);" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-magenta via-brand-crimson to-brand-cyan text-white font-orbitron font-black text-sm tracking-widest glow-box-magenta hover:scale-105 transition pointer-events-auto">
-                            OPEN LIVE MICTABLES <i class="fa-solid fa-arrow-right ml-2"></i>
+                            OPEN LIVE MIXTABLES <i class="fa-solid fa-arrow-right ml-2"></i>
                         </button>
                     </div>
                 </div>
@@ -323,7 +322,7 @@
                     <span class="text-gray-500">/</span>
                     <span class="font-orbitron text-brand-cyan font-bold text-sm" id="active-step-title">2. BEAT GEN</span>
                 </div>
-                <div class="text-xs text-brand-magenta font-mono font-bold">PRAIMES™ MASTER STUDIO</div>
+                <div class="text-xs text-brand-magenta font-mono font-bold">PRAIME™ PRODUCTION SUITE+</div>
             </div>
 
             <div class="glass-panel p-6 md:p-8 rounded-3xl min-h-[520px] border border-brand-magenta/30 relative" id="workspace-container"></div>
@@ -339,7 +338,7 @@
                 <div class="w-16 h-16 rounded-2xl bg-brand-gold/20 border border-brand-gold flex items-center justify-center mx-auto text-brand-gold text-2xl">
                     <i class="fa-brands fa-paypal"></i>
                 </div>
-                <h2 class="font-orbitron text-xl font-black text-white">PrAImes™ VIP Master Pass</h2>
+                <h2 class="font-orbitron text-xl font-black text-white">PrAIme™ VIP Master Pass</h2>
                 <p class="text-xs text-gray-300">Unlock 50+ soundkits, uncompressed lossless stem exports, and priority server bandwidth.</p>
             </div>
             <div class="bg-black/60 p-4 rounded-2xl border border-white/10 text-center space-y-2">
@@ -353,7 +352,7 @@
         </div>
     </div>
 
-    <!-- Master Studio JavaScript & Offline PWA Sync Engine -->
+    <!-- Master Studio JavaScript Engine -->
     <script>
         let audioCtx = null;
         let isPlayingBeat = false;
@@ -372,11 +371,11 @@
         let playerPauseOffset = 0;
         let isPlayerPlaying = false;
         let activePlayerBuffer = null;
-        let activePlayerName = "Live DJ Output Stream";
+        let activePlayerName = "No Track Loaded";
         let lastRenderedBlob = null;
-        let lastRenderedFilename = "PrAImes_Master.wav";
+        let lastRenderedFilename = "PrAIme_Master.wav";
 
-        let isLiveMixActive = true;
+        let isLiveMixActive = false;
         let liveMixInterval = null;
         let waveformAnimFrame = null;
 
@@ -387,7 +386,7 @@
             masterLufs: -14,
             bufferSize: 512,
             aiAutopilot: true,
-            liveDjEnabled: true,
+            liveDjEnabled: false,
             themeMode: 'cyber'
         };
 
@@ -410,8 +409,42 @@
             { id: 16, name: "Live Mixtables", icon: "fa-compact-disc" }
         ];
 
-        // IndexedDB & Offline PWA Sync Engine
-        const DB_NAME = 'PrAImesSessionDB';
+        function stopAllActiveAudio() {
+            if (playerSourceNode) {
+                try { playerSourceNode.stop(); } catch(e) {}
+                playerSourceNode = null;
+            }
+            isPlayerPlaying = false;
+            
+            if (beatIntervalId) {
+                clearInterval(beatIntervalId);
+                beatIntervalId = null;
+            }
+            isPlayingBeat = false;
+
+            if (liveMixInterval) {
+                clearInterval(liveMixInterval);
+                liveMixInterval = null;
+            }
+            isLiveMixActive = false;
+
+            const playBtn = document.getElementById('player-play-btn');
+            if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+
+            const beatBtn = document.getElementById('beat-play-btn');
+            if (beatBtn) {
+                beatBtn.innerText = "PLAY PATTERN";
+                beatBtn.className = "px-6 py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta";
+            }
+
+            const djBtn = document.getElementById('live-mix-toggle-btn');
+            if (djBtn) {
+                djBtn.innerHTML = '<i class="fa-solid fa-sliders mr-1"></i> LIVE DJ MIX: OFF';
+                djBtn.className = "px-3 py-1.5 rounded-xl bg-brand-magenta text-white font-orbitron text-[10px] font-bold glow-box-magenta hover:scale-105 transition";
+            }
+        }
+
+        const DB_NAME = 'PrAImeSessionDB';
         const DB_VERSION = 1;
         let dbInstance = null;
 
@@ -437,19 +470,7 @@
             const tx = dbInstance.transaction('session', 'readwrite');
             const store = tx.objectStore('session');
             store.put({ id: 'activeTrack', fileName: fileName, data: bufferData, timestamp: Date.now(), synced: false });
-            triggerOfflineSync();
         }
-
-        function triggerOfflineSync() {
-            if (navigator.onLine) {
-                console.log("Online: Resyncing latest user sessions to PrAImes cloud server...");
-            }
-        }
-
-        window.addEventListener('online', () => {
-            console.log("Network reconnected. Resyncing latest offline sessions...");
-            triggerOfflineSync();
-        });
 
         async function loadSessionFromDB() {
             try {
@@ -464,9 +485,10 @@
                         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                         uploadedAudioBuffer = await audioCtx.decodeAudioData(uploadedRawArrayBuffer.slice(0));
                         
-                        document.getElementById('upload-filename').innerHTML = `<span class="text-brand-cyan font-bold">${uploadedTrackName}</span> (Restored Offline Session)`;
+                        document.getElementById('upload-filename').innerHTML = `<span class="text-brand-cyan font-bold">${uploadedTrackName}</span> (Restored Session)`;
                         document.getElementById('file-actions').classList.remove('hidden');
                         document.getElementById('active-file-label').innerText = uploadedTrackName;
+                        loadIntoPlayer(uploadedAudioBuffer, uploadedTrackName);
                     }
                 };
             } catch(err) {
@@ -476,13 +498,8 @@
 
         function requestBrowserPermissions() {
             navigator.mediaDevices?.getUserMedia({ audio: true }).then(stream => {
-                console.log("Microphone permission granted.");
                 stream.getTracks().forEach(t => t.stop());
-            }).catch(e => console.log("Mic prompt skipped or denied", e));
-
-            if (window.Notification && Notification.permission !== "granted") {
-                Notification.requestPermission();
-            }
+            }).catch(e => console.log("Mic prompt skipped", e));
 
             document.getElementById('permission-screen').style.display = 'none';
             document.getElementById('audio-splash').style.display = 'flex';
@@ -543,7 +560,7 @@
                 ctx.fillStyle = '#08080c';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                if (appSettings.liveDjEnabled) {
+                if (isPlayerPlaying) {
                     ctx.strokeStyle = '#00f0ff';
                     ctx.lineWidth = 1.8;
                     ctx.beginPath();
@@ -570,38 +587,34 @@
             activePlayerBuffer = buffer;
             activePlayerName = trackName;
             document.getElementById('player-track-name').innerText = trackName;
-            document.getElementById('player-track-status').innerText = "Playing Master Track";
+            document.getElementById('player-track-status').innerText = "Ready to Play";
             document.getElementById('player-total-time').innerText = formatTime(buffer.duration);
             document.getElementById('player-seek-slider').max = buffer.duration;
             document.getElementById('player-seek-slider').value = 0;
             playerPauseOffset = 0;
-            stopPlayerPlayback();
         }
 
         function togglePlayerPlayback() {
             if (!activePlayerBuffer) {
-                alert("Live DJ stream is currently active. Upload or render a custom track to interrupt playback.");
+                alert("Please upload or render a track first!");
                 return;
             }
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             if (isPlayerPlaying) {
-                stopPlayerPlayback();
+                stopAllActiveAudio();
                 document.getElementById('player-track-status').innerText = "Paused";
-                document.getElementById('player-play-btn').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
             } else {
+                stopAllActiveAudio();
                 startPlayerPlayback(playerPauseOffset);
-                document.getElementById('player-track-status').innerText = "Playing Track";
+                document.getElementById('player-track-status').innerText = "Playing Single Track";
                 document.getElementById('player-play-btn').innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
             }
         }
 
         function startPlayerPlayback(offset) {
             if (!activePlayerBuffer) return;
-            if (playerSourceNode) {
-                try { playerSourceNode.stop(); } catch(e) {}
-            }
             playerSourceNode = audioCtx.createBufferSource();
             playerSourceNode.buffer = activePlayerBuffer;
 
@@ -616,20 +629,12 @@
             isPlayerPlaying = true;
         }
 
-        function stopPlayerPlayback() {
-            if (playerSourceNode) {
-                try { playerSourceNode.stop(); } catch(e) {}
-                playerSourceNode = null;
-            }
-            isPlayerPlaying = false;
-        }
-
         function onPlayerSeek(val) {
             if (!activePlayerBuffer) return;
             playerPauseOffset = parseFloat(val);
             document.getElementById('player-current-time').innerText = formatTime(playerPauseOffset);
             if (isPlayerPlaying) {
-                stopPlayerPlayback();
+                stopAllActiveAudio();
                 startPlayerPlayback(playerPauseOffset);
             }
         }
@@ -658,13 +663,14 @@
             lastRenderedBlob = blob;
             lastRenderedFilename = filename;
             loadIntoPlayer(buffer, filename);
+            togglePlayerPlayback();
         }
 
         async function triggerQuickDownload() {
             if (!lastRenderedBlob) {
                 if (uploadedAudioBuffer) {
                     const wavBlob = audioBufferToWavBlob(uploadedAudioBuffer);
-                    await downloadMasteredFile(wavBlob, uploadedTrackName || "PrAImes_Track.wav");
+                    await downloadMasteredFile(wavBlob, uploadedTrackName || "PrAIme_Track.wav");
                     return;
                 }
                 alert("No rendered soundtrack or uploaded track available for download yet.");
@@ -674,28 +680,21 @@
         }
 
         function toggleLiveMix() {
-            isLiveMixActive = !isLiveMixActive;
-            appSettings.liveDjEnabled = isLiveMixActive;
-            const btn = document.getElementById('live-mix-toggle-btn');
             if (isLiveMixActive) {
-                btn.innerHTML = '<i class="fa-solid fa-sliders mr-1 text-brand-cyan"></i> LIVE DJ MIX: ACTIVE (INDEFINITE)';
-                btn.className = "px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron text-[10px] font-bold glow-box-cyan hover:scale-105 transition";
-                startIndefiniteLiveDjMix();
+                stopAllActiveAudio();
             } else {
-                btn.innerHTML = '<i class="fa-solid fa-sliders mr-1"></i> LIVE DJ MIX: SILENT (OFF)';
-                btn.className = "px-3 py-1.5 rounded-xl bg-brand-magenta text-white font-orbitron text-[10px] font-bold glow-box-magenta hover:scale-105 transition";
-                if (liveMixInterval) clearInterval(liveMixInterval);
+                stopAllActiveAudio();
+                isLiveMixActive = true;
+                const btn = document.getElementById('live-mix-toggle-btn');
+                btn.innerHTML = '<i class="fa-solid fa-sliders mr-1 text-brand-cyan"></i> LIVE DJ MIX: ACTIVE';
+                btn.className = "px-3 py-1.5 rounded-xl bg-brand-cyan text-black font-orbitron text-[10px] font-bold glow-box-cyan hover:scale-105 transition";
+                liveMixInterval = setInterval(() => {
+                    if (!isLiveMixActive || !audioCtx) return;
+                    playKick();
+                    setTimeout(() => playHiHat(), 250);
+                    setTimeout(() => playSnare(), 500);
+                }, 1800);
             }
-        }
-
-        function startIndefiniteLiveDjMix() {
-            if (liveMixInterval) clearInterval(liveMixInterval);
-            liveMixInterval = setInterval(() => {
-                if (!isLiveMixActive || !audioCtx || !appSettings.liveDjEnabled) return;
-                playKick();
-                setTimeout(() => playHiHat(), 250);
-                setTimeout(() => playSnare(), 500);
-            }, 1800);
         }
 
         function startTaskProgress(title, estimatedDurationSec = 4.0) {
@@ -703,6 +702,7 @@
                 alert("A process is currently active. Please wait until processing completes.");
                 return false;
             }
+            stopAllActiveAudio();
             isProcessingQueue = true;
             
             const modal = document.getElementById('task-modal');
@@ -784,21 +784,18 @@
         }
 
         function initAudioEngine() {
-            const splash = document.getElementById('audio-splash');
-            if(splash) splash.style.display = 'none';
-
+            document.getElementById('audio-splash').style.display = 'none';
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if(audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
             } catch(e) {}
 
             try { initVisualizerBars(); } catch(e) {}
-            startIndefiniteLiveDjMix();
             switchView('home');
         }
 
         function playKick() {
-            if(!audioCtx || !appSettings.liveDjEnabled) return;
+            if(!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(160, audioCtx.currentTime);
@@ -810,7 +807,7 @@
         }
 
         function playSnare() {
-            if(!audioCtx || !appSettings.liveDjEnabled) return;
+            if(!audioCtx) return;
             const bufferSize = audioCtx.sampleRate * 0.12;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
@@ -824,7 +821,7 @@
         }
 
         function playHiHat() {
-            if(!audioCtx || !appSettings.liveDjEnabled) return;
+            if(!audioCtx) return;
             const bufferSize = audioCtx.sampleRate * 0.05;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
@@ -842,6 +839,7 @@
             const file = event.target.files[0];
             if(!file) return;
 
+            stopAllActiveAudio();
             if (!startTaskProgress("Uploading & Decoding Track", 3.0)) return;
             uploadedTrackName = file.name;
             updateTaskProgress(20, "Reading raw file bytes into buffer...");
@@ -944,7 +942,7 @@
 
                 updateTaskProgress(95, "Encoding 16-bit PCM WAV file...");
                 const wavBlob = audioBufferToWavBlob(renderedBuffer);
-                const outName = includeNewBeat ? (uploadedTrackName ? `Mastered_Beat_${uploadedTrackName}` : "PrAImes_Master_With_Beat.wav") : (uploadedTrackName ? `Mastered_Pure_${uploadedTrackName}` : "PrAImes_Pure_Master.wav");
+                const outName = includeNewBeat ? (uploadedTrackName ? `Mastered_Beat_${uploadedTrackName}` : "PrAIme_Master_With_Beat.wav") : (uploadedTrackName ? `Mastered_Pure_${uploadedTrackName}` : "PrAIme_Pure_Master.wav");
 
                 setLastRenderedOutput(wavBlob, outName, renderedBuffer);
             } catch(e) {
@@ -1093,11 +1091,10 @@
                     </div>
                 `;
             } else if(stepId === 9) {
-                // Beats Marketplace (Properly Reintegrated)
                 container.innerHTML = `
                     <div class="space-y-6">
                         <div onmouseenter="showRokdabusGuidance('marketplace', 'Explore exclusive premium beats, lease instrumental stems, and license exclusive rights for distribution.')">
-                            <h3 class="font-orbitron text-xl font-black text-white glow-cyan"><i class="fa-solid fa-store mr-2"></i> PrAImes™ Beats Marketplace</h3>
+                            <h3 class="font-orbitron text-xl font-black text-white glow-cyan"><i class="fa-solid fa-store mr-2"></i> PrAIme™ Beats Marketplace</h3>
                             <p class="text-xs text-gray-400">Discover billboard-ready instrumental beats, curated stems, and licensing options optimized for recording artists.</p>
                         </div>
 
@@ -1136,22 +1133,17 @@
                     </div>
                 `;
             } else if(stepId === 11) {
-                // Settings Page with Live DJ Toggle Option
                 container.innerHTML = `
                     <div class="space-y-6">
                         <div onmouseenter="showRokdabusGuidance('settings', 'Configure your studio audio buffer, target streaming loudness, and toggle background Live DJ mix for silent producing.')">
-                            <h3 class="font-orbitron text-xl font-black text-white glow-cyan"><i class="fa-solid fa-gear mr-2"></i> PrAImes™ Master Studio Settings</h3>
+                            <h3 class="font-orbitron text-xl font-black text-white glow-cyan"><i class="fa-solid fa-gear mr-2"></i> PrAIme™ Studio Settings</h3>
                             <p class="text-xs text-gray-400">Configure global DAW preferences, AI master parameters, and background Live DJ audio drivers.</p>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-black/60 p-6 rounded-2xl border border-brand-cyan/40 space-y-4">
-                                <h4 class="font-orbitron font-bold text-sm text-brand-cyan">Audio Engine & Live DJ Controls</h4>
+                                <h4 class="font-orbitron font-bold text-sm text-brand-cyan">Audio Engine Controls</h4>
                                 <div class="space-y-3 text-xs">
-                                    <label class="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 cursor-pointer">
-                                        <span>Enable Background Live DJ Mix (Indefinite Audio)</span>
-                                        <input type="checkbox" id="set-livedj-toggle" ${appSettings.liveDjEnabled ? 'checked' : ''} class="accent-brand-cyan w-4 h-4" onchange="toggleLiveDjSetting(this.checked)">
-                                    </label>
                                     <div>
                                         <label class="text-gray-400 block mb-1">Target Mastering Loudness (LUFS)</label>
                                         <select id="set-lufs" class="w-full bg-black/80 border border-white/10 rounded-xl p-2.5 text-white font-mono" onchange="updateSettings()">
@@ -1171,7 +1163,7 @@
                                         <input type="checkbox" id="set-autopilot" checked class="accent-brand-magenta w-4 h-4">
                                     </label>
                                     <div class="pt-2">
-                                        <button onclick="alert('Settings saved successfully! Persistent offline storage updated.')" class="w-full py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">
+                                        <button onclick="alert('Settings saved successfully!')" class="w-full py-3 rounded-xl bg-brand-magenta text-white font-orbitron font-bold text-xs glow-box-magenta">
                                             SAVE STUDIO PREFERENCES
                                         </button>
                                     </div>
@@ -1181,7 +1173,6 @@
                     </div>
                 `;
             } else if(stepId === 16) {
-                // Live Mixtables Page: Shows Rokdabus waveform manipulation separately from user waveform
                 container.innerHTML = `
                     <div class="space-y-6">
                         <div class="flex items-center justify-between">
@@ -1193,7 +1184,6 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Deck A: Rokdabus AI Stem Manipulation Waveform -->
                             <div class="glass-panel p-5 rounded-2xl border border-brand-magenta/40 space-y-4 glow-box-magenta">
                                 <div class="flex items-center justify-between">
                                     <span class="font-orbitron text-xs text-brand-magenta font-bold">Deck A: Rokdabus AI Stem Manipulator</span>
@@ -1203,13 +1193,8 @@
                                     <canvas id="rokdabus-deck-canvas" class="absolute inset-0 w-full h-full"></canvas>
                                     <div class="absolute bottom-2 left-3 text-[10px] font-mono text-brand-magenta">Manipulating Vocals & 808 Stems</div>
                                 </div>
-                                <div class="flex items-center space-x-3 text-xs">
-                                    <label class="text-gray-400">Filter Sweep:</label>
-                                    <input type="range" min="0" max="100" value="65" class="w-full accent-brand-magenta">
-                                </div>
                             </div>
 
-                            <!-- Deck B: User Listening Stream Waveform -->
                             <div class="glass-panel p-5 rounded-2xl border border-brand-cyan/40 space-y-4 glow-box-cyan">
                                 <div class="flex items-center justify-between">
                                     <span class="font-orbitron text-xs text-brand-cyan font-bold">Deck B: User Output Stream</span>
@@ -1218,10 +1203,6 @@
                                 <div class="w-full h-24 bg-black/90 rounded-xl border border-brand-cyan/50 relative overflow-hidden flex items-center justify-center">
                                     <canvas id="user-deck-canvas" class="absolute inset-0 w-full h-full"></canvas>
                                     <div class="absolute bottom-2 left-3 text-[10px] font-mono text-cyan-400">Master Stream (-14 LUFS)</div>
-                                </div>
-                                <div class="flex items-center space-x-3 text-xs">
-                                    <label class="text-gray-400">Crossfader:</label>
-                                    <input type="range" min="0" max="100" value="50" class="w-full accent-brand-cyan">
                                 </div>
                             </div>
                         </div>
@@ -1248,14 +1229,63 @@
             }
         }
 
-        function toggleLiveDjSetting(enabled) {
-            appSettings.liveDjEnabled = enabled;
-            isLiveMixActive = enabled;
-            if (enabled) {
-                startIndefiniteLiveDjMix();
+        function toggleBeatPlayback() {
+            if (isProcessingQueue) return;
+            if(isPlayingBeat) {
+                stopAllActiveAudio();
             } else {
-                if (liveMixInterval) clearInterval(liveMixInterval);
+                stopAllActiveAudio();
+                isPlayingBeat = true;
+                const btn = document.getElementById('beat-play-btn');
+                btn.innerText = "STOP PATTERN";
+                btn.className = "px-6 py-3 rounded-xl bg-brand-cyan text-black font-orbitron font-bold text-xs glow-box-cyan";
+                let step = 0;
+                beatIntervalId = setInterval(() => {
+                    if(beatGrid[step]) {
+                        if(step % 4 === 0) playKick();
+                        else if(step % 4 === 2) playSnare();
+                        else playHiHat();
+                    }
+                    step = (step + 1) % 16;
+                }, 175);
             }
+        }
+
+        function togglePad(el, index) {
+            if (isProcessingQueue) return;
+            beatGrid[index] = !beatGrid[index];
+            loadStep(2);
+            if(beatGrid[index]) {
+                if(index % 4 === 0) playKick();
+                else if(index % 4 === 2) playSnare();
+                else playHiHat();
+            }
+        }
+
+        function runRokdabusFullyAutomatedBeat() {
+            if (isProcessingQueue) return;
+            stopAllActiveAudio();
+            beatGrid.fill(false);
+            beatGrid[0] = true; beatGrid[4] = true; beatGrid[8] = true; beatGrid[12] = true;
+            beatGrid[2] = true; beatGrid[10] = true; beatGrid[14] = true;
+            if (Math.random() > 0.5) beatGrid[6] = true;
+            if (Math.random() > 0.5) beatGrid[15] = true;
+            loadStep(2);
+            toggleBeatPlayback();
+        }
+
+        async function renderAndDownloadBeat() {
+            if (isProcessingQueue) return;
+            if (!startTaskProgress("Rendering Beat Pattern", 3.0)) return;
+            
+            setTimeout(async () => {
+                const sampleRate = 44100;
+                const offlineCtx = new OfflineAudioContext(2, sampleRate * 4, sampleRate);
+                const buffer = await offlineCtx.startRendering();
+                const blob = audioBufferToWavBlob(buffer);
+                setLastRenderedOutput(blob, "PrAIme_Generated_Beat.wav", buffer);
+                endTaskProgress();
+            }, 300);
         }
 
         function startMixtablesCanvases() {
@@ -1294,6 +1324,11 @@
             const autoChk = document.getElementById('set-autopilot');
             if(lufsSel) appSettings.masterLufs = parseInt(lufsSel.value);
             if(autoChk) appSettings.aiAutopilot = autoChk.checked;
+        }
+
+        function toggleExplicit() {
+            explicitMode = !explicitMode;
+            document.getElementById('explicit-status').innerText = explicitMode ? "EXPLICIT: ON" : "EXPLICIT: OFF";
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
